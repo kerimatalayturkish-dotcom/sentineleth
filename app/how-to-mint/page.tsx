@@ -5,9 +5,8 @@ export const metadata = {
   description: "Mint SentinelETH NFTs in three steps with Claude and MetaMask.",
 }
 
-// Primary domain first, fallback used until DNS is live.
-const MCP_URL_PRIMARY = "https://sentineleth.xyz/mcp"
-const MCP_URL_FALLBACK = "https://sentineleth.onrender.com/mcp"
+// Public MCP server URL (single canonical endpoint).
+const MCP_URL = "https://sentineleth-mcp.onrender.com/mcp"
 
 export default function HowToMintPage() {
   return (
@@ -91,14 +90,7 @@ export default function HowToMintPage() {
                 Name it <span className="text-foreground">SentinelETH</span> and
                 paste the URL:
                 <pre className="mt-2 p-2 rounded bg-background/60 border border-sentinel/20 text-[10px] text-sentinel overflow-x-auto">
-                  {MCP_URL_PRIMARY}
-                </pre>
-                <p className="mt-1 text-[10px] text-muted-foreground/80">
-                  If the primary domain hasn&apos;t propagated yet, use the
-                  fallback:
-                </p>
-                <pre className="mt-1 p-2 rounded bg-background/60 border border-sentinel/20 text-[10px] text-sentinel overflow-x-auto">
-                  {MCP_URL_FALLBACK}
+                  {MCP_URL}
                 </pre>
               </li>
               <li>
@@ -123,8 +115,7 @@ export default function HowToMintPage() {
                 transport.
               </li>
               <li>
-                Paste the same URL as above ({MCP_URL_PRIMARY}, or{" "}
-                {MCP_URL_FALLBACK} during DNS propagation).
+                Paste the same URL as above ({MCP_URL}).
               </li>
               <li>Save and restart Claude Desktop.</li>
             </ol>
