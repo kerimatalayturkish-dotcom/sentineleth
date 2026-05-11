@@ -1,0 +1,15 @@
+{
+  "network": "mainnet",
+  "uploadedAt": "2026-05-11T04:31:09.740Z",
+  "logoUrl": "https://gateway.irys.xyz/CZXaDmhEMtZeDwVbk9hji88JwssvWXYGKoAiG1JPcL2x",
+  "bannerUrl": "https://gateway.irys.xyz/Hx3XHKFhw8pwhp1A2wLiHs4FgevFtCQjCMVXopLsFbME",
+  "collectionMetadataUrl": "https://gateway.irys.xyz/FZHxa74jh4yZhHXbfwNZBNAZ8WVy9MxJq37jfxWtvgWR",
+  "metadata": {
+    "name": "SentinelETH",
+    "description": "First agentic NFT collection on Ethereum. Mint via Claude AI through MCP. Each Sentinel is a unique on-chain agent with deterministic traits, lives forever on Ethereum + Irys.",
+    "external_link": "https://sentineleth.xyz",
+    "twitter_username": "SentinelTempo",
+    "image": "https://gateway.irys.xyz/CZXaDmhEMtZeDwVbk9hji88JwssvWXYGKoAiG1JPcL2x",
+    "banner_image_url": "https://gateway.irys.xyz/Hx3XHKFhw8pwhp1A2wLiHs4FgevFtCQjCMVXopLsFbME"
+  }
+}

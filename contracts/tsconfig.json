@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "target": "es2022",
+    "module": "commonjs",
+    "moduleResolution": "node10",
+    "ignoreDeprecations": "6.0",
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "strict": true,
+    "rootDir": ".",
+    "outDir": "./dist",
+    "sourceMap": true
+  },
+  "include": ["./scripts", "./test", "./hardhat.config.ts", "./typechain-types", "./hardhat-env.d.ts"],
+  "files": ["./hardhat.config.ts"]
+}

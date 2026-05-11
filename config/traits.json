@@ -1,0 +1,172 @@
+{
+  "layers": [
+    {
+      "id": "background",
+      "name": "Background",
+      "order": 0,
+      "required": true,
+      "options": [
+        { "id": "assembly_line", "name": "Assembly Line", "file": "0-background/assembly_line.png" },
+        { "id": "circuit_sky", "name": "Circuit Sky", "file": "0-background/circuit_sky.png" },
+        { "id": "code_waterfall", "name": "Code Waterfall", "file": "0-background/code_waterfall.png" },
+        { "id": "cyber_graveyard", "name": "Cyber-Graveyard", "file": "0-background/cyber_graveyard.png" },
+        { "id": "data_stream", "name": "Data Stream", "file": "0-background/data_stream.png" },
+        { "id": "digital_forest", "name": "Digital Forest", "file": "0-background/digital_forest.png" },
+        { "id": "glitch_dimension", "name": "Glitch Dimension", "file": "0-background/glitch_dimension.png" },
+        { "id": "neon_alleyway", "name": "Neon Alleyway", "file": "0-background/neon_alleyway.png" },
+        { "id": "server_room", "name": "Server Room", "file": "0-background/server_room.png" },
+        { "id": "space_station", "name": "Space Station", "file": "0-background/space_station.png" },
+        { "id": "system_error", "name": "System Error", "file": "0-background/system_error.png" },
+        { "id": "the_construct", "name": "The Construct", "file": "0-background/the_construct.png" },
+        { "id": "the_core", "name": "The Core", "file": "0-background/the_core.png" },
+        { "id": "the_grid", "name": "The Grid", "file": "0-background/the_grid.png" },
+        { "id": "underground_bunker", "name": "Underground Bunker", "file": "0-background/underground_bunker.png" },
+        { "id": "0d190b", "name": "#0D190B", "file": "0-background/0d190b.png" },
+        { "id": "123d08", "name": "#123D08", "file": "0-background/123d08.png" },
+        { "id": "313540", "name": "#313540", "file": "0-background/313540.png" },
+        { "id": "421d03", "name": "#421D03", "file": "0-background/421d03.png" }
+      ]
+    },
+    {
+      "id": "back",
+      "name": "Back",
+      "order": 1,
+      "required": false,
+      "options": [
+        { "id": "battery_pack", "name": "Battery Pack", "file": "1-back/battery_pack.png" },
+        { "id": "cape_of_wires", "name": "Cape of Wires", "file": "1-back/cape_of_wires.png" },
+        { "id": "cooling_radiator", "name": "Cooling Radiator", "file": "1-back/cooling_radiator.png" },
+        { "id": "cyber_katana", "name": "Cyber Katana", "file": "1-back/cyber_katana.png" },
+        { "id": "gravity_orb", "name": "Gravity Orb", "file": "1-back/gravity_orb.png" },
+        { "id": "hack_pack", "name": "Hack-Pack", "file": "1-back/hack_pack.png" },
+        { "id": "jetpack", "name": "Jetpack", "file": "1-back/jetpack.png" },
+        { "id": "matrix_jack", "name": "Matrix Jack", "file": "1-back/matrix_jack.png" },
+        { "id": "oxygen_tanks", "name": "Oxygen Tanks", "file": "1-back/oxygen_tanks.png" },
+        { "id": "plasma_rifle", "name": "Plasma Rifle", "file": "1-back/plasma_rifle.png" },
+        { "id": "satellite_probe", "name": "Satellite Probe", "file": "1-back/satellite_probe.png" },
+        { "id": "shield_generator", "name": "Shield Generator", "file": "1-back/shield_generator.png" },
+        { "id": "solar_wings", "name": "Solar Wings", "file": "1-back/solar_wings.png" },
+        { "id": "spider_arms", "name": "Spider Arms", "file": "1-back/spider_arms.png" },
+        { "id": "spy_camera", "name": "Spy Camera", "file": "1-back/spy_camera.png" }
+      ]
+    },
+    {
+      "id": "body",
+      "name": "Body",
+      "order": 2,
+      "required": true,
+      "options": [
+        { "id": "battle_damaged", "name": "Battle Damaged", "file": "2-body/battle_damaged.png" },
+        { "id": "carbon_fiber", "name": "Carbon Fiber", "file": "2-body/carbon_fiber.png" },
+        { "id": "chrome_plated", "name": "Chrome Plated", "file": "2-body/chrome_plated.png" },
+        { "id": "circuit_board", "name": "Circuit Board", "file": "2-body/circuit_board.png" },
+        { "id": "deep_sea", "name": "Deep Sea", "file": "2-body/deep_sea.png" },
+        { "id": "industrial_hazard", "name": "Industrial Hazard", "file": "2-body/industrial_hazard.png" },
+        { "id": "led_grid", "name": "LED Grid", "file": "2-body/led_grid.png" },
+        { "id": "matrix_rain", "name": "Matrix Rain", "file": "2-body/matrix_rain.png" },
+        { "id": "nano_suit", "name": "Nano Suit", "file": "2-body/nano_suit.png" },
+        { "id": "og_with_lights", "name": "OG with Lights", "file": "2-body/og_with_lights.png" },
+        { "id": "prototype", "name": "Prototype", "file": "2-body/prototype.png" },
+        { "id": "royal_gold", "name": "Royal Gold", "file": "2-body/royal_gold.png" },
+        { "id": "rusty_scraps", "name": "Rusty Scraps", "file": "2-body/rusty_scraps.png" },
+        { "id": "space_explorer", "name": "Space Explorer", "file": "2-body/space_explorer.png" },
+        { "id": "stealth_camo", "name": "Stealth Camo", "file": "2-body/stealth_camo.png" },
+        { "id": "void_armor", "name": "Void Armor", "file": "2-body/void_armor.png" }
+      ]
+    },
+    {
+      "id": "mouth",
+      "name": "Mouth",
+      "order": 3,
+      "required": false,
+      "options": [
+        { "id": "binary_stitches", "name": "Binary Stitches", "file": "3-mouth/binary_stitches.png" },
+        { "id": "bio_mechanical", "name": "Bio-Mechanical", "file": "3-mouth/bio_mechanical.png" },
+        { "id": "data_port", "name": "Data Port", "file": "3-mouth/data_port.png" },
+        { "id": "energy_core_vent", "name": "Energy Core Vent", "file": "3-mouth/energy_core_vent.png" },
+        { "id": "exhaust_pipe", "name": "Exhaust Pipe", "file": "3-mouth/exhaust_pipe.png" },
+        { "id": "exposed_hydraulics", "name": "Exposed Hydraulics", "file": "3-mouth/exposed_hydraulics.png" },
+        { "id": "hazard_tape", "name": "Hazard Tape", "file": "3-mouth/hazard_tape.png" },
+        { "id": "heatsink_grille", "name": "Heatsink Grille", "file": "3-mouth/heatsink_grille.png" },
+        { "id": "liquid_metal", "name": "Liquid Metal", "file": "3-mouth/liquid_metal.png" },
+        { "id": "og", "name": "OG", "file": "3-mouth/og.png" },
+        { "id": "respirator", "name": "Respirator", "file": "3-mouth/respirator.png" },
+        { "id": "sealed_plate", "name": "Sealed Plate", "file": "3-mouth/sealed_plate.png" },
+        { "id": "serial_number", "name": "Serial Number", "file": "3-mouth/serial_number.png" },
+        { "id": "speaker_mesh", "name": "Speaker Mesh", "file": "3-mouth/speaker_mesh.png" },
+        { "id": "ventilation_fan", "name": "Ventilation Fan", "file": "3-mouth/ventilation_fan.png" },
+        { "id": "voice_waveform", "name": "Voice Waveform", "file": "3-mouth/voice_waveform.png" }
+      ]
+    },
+    {
+      "id": "eyes",
+      "name": "Eyes",
+      "order": 4,
+      "required": false,
+      "options": [
+        { "id": "binary_stream", "name": "Binary Stream", "file": "4-eyes/binary_stream.png" },
+        { "id": "cyclops_beam", "name": "Cyclops Beam", "file": "4-eyes/cyclops_beam.png" },
+        { "id": "dead_pixel", "name": "Dead Pixel", "file": "4-eyes/dead_pixel.png" },
+        { "id": "diamond_core", "name": "Diamond Core", "file": "4-eyes/diamond_core.png" },
+        { "id": "glitch_blink", "name": "Glitch Blink", "file": "4-eyes/glitch_blink.png" },
+        { "id": "heartbeat_monitor", "name": "Heartbeat Monitor", "file": "4-eyes/heartbeat_monitor.png" },
+        { "id": "heatmap", "name": "Heatmap", "file": "4-eyes/heatmap.png" },
+        { "id": "hexgrid_honeycomb", "name": "HexGrid - HoneyComb", "file": "4-eyes/hexgrid_honeycomb.png" },
+        { "id": "hollow_sockets", "name": "Hollow Sockets", "file": "4-eyes/hollow_sockets.png" },
+        { "id": "loading_ring", "name": "Loading Ring", "file": "4-eyes/loading_ring.png" },
+        { "id": "neural_link", "name": "Neural Link", "file": "4-eyes/neural_link.png" },
+        { "id": "og", "name": "OG", "file": "4-eyes/og.png" },
+        { "id": "radar_sweep", "name": "Radar Sweep", "file": "4-eyes/radar_sweep.png" },
+        { "id": "targeting_reticle", "name": "Targeting Reticle", "file": "4-eyes/targeting_reticle.png" },
+        { "id": "triple_threat", "name": "Triple Threat", "file": "4-eyes/triple_threat.png" },
+        { "id": "x_ray", "name": "X-Ray", "file": "4-eyes/x_ray.png" }
+      ]
+    },
+    {
+      "id": "eyewear",
+      "name": "Eyewear",
+      "order": 5,
+      "required": false,
+      "options": [
+        { "id": "ar_glasses", "name": "AR Glasses", "file": "5-eyewear/ar_glasses.png" },
+        { "id": "blindfold_overlay", "name": "Blindfold Overlay", "file": "5-eyewear/blindfold_overlay.png" },
+        { "id": "carbon_fiber_band", "name": "Carbon Fiber Band", "file": "5-eyewear/carbon_fiber_band.png" },
+        { "id": "data_visor", "name": "Data Visor", "file": "5-eyewear/data_visor.png" },
+        { "id": "energy_crown", "name": "Energy Crown", "file": "5-eyewear/energy_crown.png" },
+        { "id": "holographic_hud", "name": "Holographic HUD", "file": "5-eyewear/holographic_hud.png" },
+        { "id": "magnifying_lens", "name": "Magnifying Lens", "file": "5-eyewear/magnifying_lens.png" },
+        { "id": "night_vision", "name": "Night Vision", "file": "5-eyewear/night_vision.png" },
+        { "id": "scanning_laser", "name": "Scanning Laser", "file": "5-eyewear/scanning_laser.png" },
+        { "id": "scouter", "name": "Scouter", "file": "5-eyewear/scouter.png" },
+        { "id": "shattered_shield", "name": "Shattered Shield", "file": "5-eyewear/shattered_shield.png" },
+        { "id": "solar_shield", "name": "Solar Shield", "file": "5-eyewear/solar_shield.png" },
+        { "id": "tactical_monocle", "name": "Tactical Monocle", "file": "5-eyewear/tactical_monocle.png" },
+        { "id": "vr_goggles", "name": "VR Goggles", "file": "5-eyewear/vr_goggles.png" },
+        { "id": "welding_mask", "name": "Welding Mask", "file": "5-eyewear/welding_mask.png" }
+      ]
+    },
+    {
+      "id": "head_items",
+      "name": "Head Items",
+      "order": 6,
+      "required": false,
+      "options": [
+        { "id": "armor_plating", "name": "Armor Plating", "file": "6-head_items/armor_plating.png" },
+        { "id": "brain_case", "name": "Brain Case", "file": "6-head_items/brain_case.png" },
+        { "id": "cooling_tubes", "name": "Cooling Tubes", "file": "6-head_items/cooling_tubes.png" },
+        { "id": "horn_vents", "name": "Horn Vents", "file": "6-head_items/horn_vents.png" },
+        { "id": "micro_drone_dock", "name": "Micro-Drone Dock", "file": "6-head_items/micro_drone_dock.png" },
+        { "id": "mohawk_cables", "name": "Mohawk Cables", "file": "6-head_items/mohawk_cables.png" },
+        { "id": "neuro_link_cable", "name": "Neuro-Link Cable", "file": "6-head_items/neuro_link_cable.png" },
+        { "id": "radar_fin", "name": "Radar Fin", "file": "6-head_items/radar_fin.png" },
+        { "id": "satellite_dish", "name": "Satellite Dish", "file": "6-head_items/satellite_dish.png" },
+        { "id": "security_camera", "name": "Security Camera", "file": "6-head_items/security_camera.png" },
+        { "id": "signal_jammer", "name": "Signal Jammer", "file": "6-head_items/signal_jammer.png" },
+        { "id": "tesla_coil", "name": "Tesla Coil", "file": "6-head_items/tesla_coil.png" },
+        { "id": "twin_antennas", "name": "Twin Antennas", "file": "6-head_items/twin_antennas.png" },
+        { "id": "warning_strobe", "name": "Warning Strobe", "file": "6-head_items/warning_strobe.png" },
+        { "id": "wi_fi_halo", "name": "Wi-Fi Halo", "file": "6-head_items/wi_fi_halo.png" }
+      ]
+    }
+  ]
+}

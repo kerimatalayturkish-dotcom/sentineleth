@@ -1,0 +1,223 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-pixel), monospace;
+  --font-mono: var(--font-pixel), monospace;
+  --font-heading: var(--font-pixel), monospace;
+  --color-sentinel: var(--sentinel);
+  --color-sentinel-glow: var(--sentinel-glow);
+  --color-sentinel-dim: var(--sentinel-dim);
+  --color-status-live: var(--status-live);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+/* Sentinel Cyberpunk Theme — dark only */
+:root {
+  --background: #0a0a14;
+  --foreground: #e0dfe6;
+  --card: #111122;
+  --card-foreground: #e0dfe6;
+  --popover: #111122;
+  --popover-foreground: #e0dfe6;
+  --primary: #ff2d2d;
+  --primary-foreground: #0a0a14;
+  --secondary: #1a1a2e;
+  --secondary-foreground: #e0dfe6;
+  --muted: #16162a;
+  --muted-foreground: #6b6b8a;
+  --accent: #1e1e3a;
+  --accent-foreground: #e0dfe6;
+  --destructive: #ff4444;
+  --border: rgba(255, 45, 45, 0.15);
+  --input: rgba(255, 45, 45, 0.12);
+  --ring: #ff2d2d;
+  --chart-1: #ff2d2d;
+  --chart-2: #00ff66;
+  --chart-3: #ff6b35;
+  --chart-4: #6b35ff;
+  --chart-5: #35c9ff;
+  --radius: 0.625rem;
+  --sentinel: #ff2d2d;
+  --sentinel-glow: rgba(255, 45, 45, 0.4);
+  --sentinel-dim: rgba(255, 45, 45, 0.08);
+  --status-live: #00ff66;
+  --font-heading: var(--font-pixel), monospace;
+  --font-sans: var(--font-pixel), monospace;
+  --font-mono: var(--font-pixel), monospace;
+  --sidebar: #0e0e1a;
+  --sidebar-foreground: #e0dfe6;
+  --sidebar-primary: #ff2d2d;
+  --sidebar-primary-foreground: #0a0a14;
+  --sidebar-accent: #1a1a2e;
+  --sidebar-accent-foreground: #e0dfe6;
+  --sidebar-border: rgba(255, 45, 45, 0.15);
+  --sidebar-ring: #ff2d2d;
+}
+
+/* Remove light theme — sentinel is always dark */
+.dark {
+  /* same as :root */
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
+  }
+}
+
+/* Sentinel glow animations */
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 8px var(--sentinel-glow), 0 0 24px var(--sentinel-dim); }
+  50% { box-shadow: 0 0 16px var(--sentinel-glow), 0 0 48px var(--sentinel-dim); }
+}
+
+@keyframes text-glow {
+  0%, 100% { text-shadow: 0 0 8px var(--sentinel-glow); }
+  50% { text-shadow: 0 0 20px var(--sentinel-glow), 0 0 40px var(--sentinel-dim); }
+}
+
+@keyframes blink-cursor {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+@keyframes shimmer-trace {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 3s ease-in-out infinite;
+}
+
+.animate-text-glow {
+  animation: text-glow 3s ease-in-out infinite;
+}
+
+.animate-blink {
+  animation: blink-cursor 1s step-end infinite;
+}
+
+.animate-shimmer {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--sentinel-glow) 50%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer-trace 3s linear infinite;
+}
+
+/* Animated circuit-trace border (for CTA buttons) */
+@keyframes border-trace-spin {
+  to { transform: rotate(360deg); }
+}
+
+.border-trace {
+  position: relative;
+  isolation: isolate;
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+.border-trace::before {
+  content: "";
+  position: absolute;
+  inset: -150%;
+  z-index: -1;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    transparent 270deg,
+    #ff2d2d 320deg,
+    #ff8a8a 350deg,
+    #ff2d2d 360deg
+  );
+  animation: border-trace-spin 3s linear infinite;
+}
+.border-trace::after {
+  content: "";
+  position: absolute;
+  inset: 2px;
+  z-index: -1;
+  background: #000;
+  border-radius: calc(0.5rem - 2px);
+}
+.border-trace:hover::before {
+  animation-duration: 1.2s;
+}
+
+/* Card sentinel border glow on hover */
+.sentinel-card {
+  transition: box-shadow 0.3s ease, border-color 0.3s ease;
+}
+.sentinel-card:hover {
+  box-shadow: 0 0 12px var(--sentinel-dim), 0 0 32px rgba(255, 45, 45, 0.06);
+  border-color: rgba(255, 45, 45, 0.3);
+}
+
+/* Pixel heading style */
+.font-pixel {
+  font-family: var(--font-pixel), monospace;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+/* RainbowKit overrides to match sentinel theme */
+[data-rk] [aria-label="Close"] {
+  color: #ff2d2d !important;
+}
+[data-rk] button {
+  font-family: var(--font-pixel), monospace !important;
+}
+[data-rk] div[role="dialog"] {
+  background: #0e0e1c !important;
+  border: 1px solid rgba(255, 45, 45, 0.15) !important;
+}
