@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "generate-merkle": "tsx --env-file=.env.local scripts/generate-merkle.ts",
-    "watcher": "tsx --env-file=.env.local scripts/run-watcher.ts"
+    "watcher": "tsx scripts/run-watcher.ts",
+    "watcher:local": "tsx --env-file=.env.local scripts/run-watcher.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.3.0",
