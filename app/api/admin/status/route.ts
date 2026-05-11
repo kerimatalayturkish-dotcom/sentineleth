@@ -61,10 +61,9 @@ export async function GET() {
       airdropRemaining,
       mintPriceWei,
       publicClosed,
+      airdropClosed,
       paused,
-    ] = statusResult as readonly [bigint, bigint, bigint, bigint, bigint, bigint, boolean, boolean]
-    // Ownable contract has no airdropClosed flag; derive it from cap exhaustion.
-    const airdropClosed = airdropRemaining === 0n
+    ] = statusResult as readonly [bigint, bigint, bigint, bigint, bigint, bigint, boolean, boolean, boolean]
 
     // Native ETH balances (best-effort).
     const [treasuryEth, serverEth, contractEth] = await Promise.all([
