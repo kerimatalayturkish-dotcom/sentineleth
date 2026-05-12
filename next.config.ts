@@ -129,6 +129,19 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  async redirects() {
+    // Permanently redirect the legacy onrender.com hostname to the canonical
+    // custom domain. This signals to Google/Brave Safe Browsing that the
+    // shared-subdomain URL is deprecated and the new domain is canonical.
+    return [
+      {
+        source: "/:path*",
+        has: [{ type: "host", value: "sentineleth.onrender.com" }],
+        destination: "https://sentineleth.xyz/:path*",
+        permanent: true,
+      },
+    ];
+  },
 };
 
 export default nextConfig;
