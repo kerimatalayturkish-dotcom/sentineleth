@@ -9,6 +9,11 @@ const FUTURE_DEPTH_FACE_COLOR = 0x1a211c
 const FUTURE_DEPTH_FACE_EMISSIVE = 0x103222
 const FUTURE_EDGE_COLOR = 0xb7ffd5
 const FUTURE_EDGE_GLOW_COLOR = 0x4eff9f
+const PENDING_FRONT_FACE_COLOR = 0x5e4614
+const PENDING_DEPTH_FACE_COLOR = 0x35280c
+const PENDING_DEPTH_FACE_EMISSIVE = 0x5f4211
+const PENDING_EDGE_COLOR = 0xffde93
+const PENDING_EDGE_GLOW_COLOR = 0xffb84f
 const WON_FRONT_FACE_COLOR = 0x1d9d4b
 const WON_DEPTH_FACE_COLOR = 0x144829
 const WON_DEPTH_FACE_EMISSIVE = 0x1e6a3d
@@ -108,7 +113,7 @@ interface BlockPoolItem {
   logicalIndex: number
 }
 
-type BlockVisualKind = "future" | "won" | "missed"
+type BlockVisualKind = "future" | "pending" | "won" | "missed"
 
 interface BlockLabelContent {
   primary: string
@@ -147,7 +152,7 @@ function formatPowerValue(value: string | null | undefined) {
 function buildTimelineSnapshot(timeline: TimelineResponse | null, currentBlock: number | null): TimelineSnapshot {
   const blocks = timeline?.blocks ?? []
   return {
-    firstBlockNumber: blocks[0]?.blockNumber ?? timeline?.windowStartBlock ?? timeline?.startBlock ?? currentBlock,
+    firstBlockNumber: timeline?.windowStartBlock ?? blocks[0]?.blockNumber ?? timeline?.startBlock ?? currentBlock,
     currentBlock: timeline?.currentBlock ?? currentBlock,
     lastProcessedBlock: timeline?.lastProcessedBlock ?? blocks.at(-1)?.blockNumber ?? null,
     blocksByNumber: new Map(blocks.map((block) => [block.blockNumber, block])),
@@ -279,10 +284,26 @@ function resolveBlockVisual(snapshot: TimelineSnapshot, blockNumber: number) {
   const outcome = snapshot.blocksByNumber.get(blockNumber)
   if (outcome?.status === "won") return { kind: "won" as const, outcome }
   if (outcome?.status === "missed") return { kind: "missed" as const, outcome }
+  if (snapshot.currentBlock !== null && blockNumber < snapshot.currentBlock) {
+    return { kind: "pending" as const, outcome: null }
+  }
   return { kind: "future" as const, outcome: null }
 }
 
 function applyBlockVisualState(item: BlockPoolItem, kind: BlockVisualKind) {
+  if (kind === "pending") {
+    item.frontMaterial.color.setHex(PENDING_FRONT_FACE_COLOR)
+    item.frontMaterial.emissive.setHex(PENDING_DEPTH_FACE_EMISSIVE)
+    item.frontMaterial.emissiveIntensity = 0.16
+    item.depthMaterial.color.setHex(PENDING_DEPTH_FACE_COLOR)
+    item.depthMaterial.emissive.setHex(PENDING_DEPTH_FACE_EMISSIVE)
+    item.depthMaterial.emissiveIntensity = 0.12
+    item.edgeMaterial.color.setHex(PENDING_EDGE_COLOR)
+    item.glowMaterial.color.setHex(PENDING_EDGE_GLOW_COLOR)
+    item.glowMaterial.opacity = 0.24
+    return
+  }
+
   if (kind === "won") {
     item.frontMaterial.color.setHex(WON_FRONT_FACE_COLOR)
     item.frontMaterial.emissive.setHex(WON_DEPTH_FACE_EMISSIVE)
@@ -405,6 +426,15 @@ function getBlockClaimLabel(block: TimelineBlock) {
 }
 
 function buildBlockLabelContent(blockNumber: number, outcome: TimelineBlock | null, kind: BlockVisualKind): BlockLabelContent {
+  if (!outcome && kind === "pending") {
+    return {
+      primary: blockNumber.toLocaleString("en-US"),
+      secondary: null,
+      tertiary: "PENDING",
+      kind,
+    }
+  }
+
   return {
     primary: blockNumber.toLocaleString("en-US"),
     secondary: outcome ? `PWR ${formatPowerValue(outcome.eligiblePowerTotal)}` : null,
