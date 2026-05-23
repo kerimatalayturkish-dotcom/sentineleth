@@ -147,7 +147,7 @@ function formatPowerValue(value: string | null | undefined) {
 function buildTimelineSnapshot(timeline: TimelineResponse | null, currentBlock: number | null): TimelineSnapshot {
   const blocks = timeline?.blocks ?? []
   return {
-    firstBlockNumber: blocks[0]?.blockNumber ?? timeline?.windowStartBlock ?? currentBlock,
+    firstBlockNumber: blocks[0]?.blockNumber ?? timeline?.windowStartBlock ?? timeline?.startBlock ?? currentBlock,
     currentBlock: timeline?.currentBlock ?? currentBlock,
     lastProcessedBlock: timeline?.lastProcessedBlock ?? blocks.at(-1)?.blockNumber ?? null,
     blocksByNumber: new Map(blocks.map((block) => [block.blockNumber, block])),
