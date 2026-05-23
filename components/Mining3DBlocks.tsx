@@ -732,7 +732,7 @@ export function Mining3DBlocks({ currentBlock = null, streamTimeline = null }: M
         const blockNumber = firstBlockNumber === null ? null : firstBlockNumber + logicalIndex
         let visual = blockNumber === null ? { kind: "future" as const, outcome: null } : resolveBlockVisual(timelineState, blockNumber)
         const isConveyorBlock = conveyorActive && blockNumber === conveyor.confirmedBlock
-        if (isConveyorBlock && pendingTimelineState) {
+        if (isConveyorBlock && pendingTimelineState && blockNumber !== null) {
           const pendingOutcome = pendingTimelineState.blocksByNumber.get(blockNumber)
           if (pendingOutcome) {
             visual = conveyorProgress < CONVEYOR_CONFIRM_SWITCH_PROGRESS

@@ -1179,9 +1179,14 @@ export async function syncClaimSettlements() {
       continue
     }
 
-    const bucketIds = entry.log.args.bucketIds.map((value) => Number(value))
-    const settledRounds = entry.log.args.settledRounds.map((value) => Number(value))
-    await markAggregateClaimed(entry.log.args.winner, bucketIds, settledRounds, entry.log.transactionHash)
+    const winner = entry.log.args.winner
+    const bucketIdValues = entry.log.args.bucketIds
+    const settledRoundValues = entry.log.args.settledRounds
+    if (!winner || !bucketIdValues || !settledRoundValues) continue
+
+    const bucketIds = bucketIdValues.map((value) => Number(value))
+    const settledRounds = settledRoundValues.map((value) => Number(value))
+    await markAggregateClaimed(winner, bucketIds, settledRounds, entry.log.transactionHash)
   }
 
   await writeMiningSyncCheckpoint(syncKey, latestBlock)

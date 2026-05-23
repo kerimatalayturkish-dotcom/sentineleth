@@ -20,6 +20,12 @@ type AdminAuthBody = {
   totpCode?: string
 }
 
+type OptionalAdminEnv = ReturnType<typeof getOptionalServerEnv>
+type ReadyAdminEnv = OptionalAdminEnv & {
+  adminUsername: string
+  jwtSecret: string
+}
+
 // 5 password attempts per 15 minutes per IP.
 const LOGIN_WINDOW_MS = 15 * 60_000
 const LOGIN_MAX = 5
@@ -60,10 +66,14 @@ function invalidTotpConfiguration() {
   return NextResponse.json({ error: "Admin 2FA is misconfigured" }, { status: 503 })
 }
 
+function hasReadyAdminEnv(env: OptionalAdminEnv): env is ReadyAdminEnv {
+  return Boolean(env.adminUsername && (env.adminPassword || env.adminPasswordHash) && env.jwtSecret)
+}
+
 async function finishTotpLogin(
   body: AdminAuthBody,
   cookieStore: Awaited<ReturnType<typeof cookies>>,
-  env: ReturnType<typeof getOptionalServerEnv>,
+  env: ReadyAdminEnv,
 ) {
   if (!adminTotpConfigured(env.adminTotpSecret)) {
     clearAuthCookies(cookieStore)
@@ -103,7 +113,7 @@ async function finishTotpLogin(
 async function startCredentialLogin(
   body: AdminAuthBody,
   cookieStore: Awaited<ReturnType<typeof cookies>>,
-  env: ReturnType<typeof getOptionalServerEnv>,
+  env: ReadyAdminEnv,
 ) {
   const { username, password, totpCode } = body
   if (!username || !password || typeof username !== "string" || typeof password !== "string") {
@@ -171,7 +181,7 @@ export async function POST(request: NextRequest) {
   if (!rl.allowed) return rateLimitResponse(rl.retryAfterMs)
 
   const env = getOptionalServerEnv()
-  if (!env.adminUsername || (!env.adminPassword && !env.adminPasswordHash) || !env.jwtSecret) {
+  if (!hasReadyAdminEnv(env)) {
     return NextResponse.json({ error: "Admin not configured" }, { status: 503 })
   }
 

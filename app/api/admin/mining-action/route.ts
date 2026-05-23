@@ -64,6 +64,24 @@ export async function POST(request: NextRequest) {
         },
       )
     }
+    if (!adminAccount) {
+      return NextResponse.json(
+        {
+          ok: true,
+          action,
+          mode: "manual",
+          localSigner: null,
+          warning: operator.warning,
+          execution: buildManualExecution({
+            to: patrolMiner,
+            abi: PATROL_MINER_ABI,
+            functionName: "startMining",
+            requiredSigners: [onChainAdmin],
+            note: `No local mining operator signer is available. Submit this transaction from the PatrolMiner admin ${onChainAdmin}.`,
+          }),
+        },
+      )
+    }
     if (miningStartBlock !== 0n) {
       return NextResponse.json({ error: `Mining already started at block ${miningStartBlock}` }, { status: 409 })
     }
