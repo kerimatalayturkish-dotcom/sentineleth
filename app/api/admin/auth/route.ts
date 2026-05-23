@@ -52,7 +52,7 @@ function clearAuthCookies(cookieStore: Awaited<ReturnType<typeof cookies>>) {
   cookieStore.delete(ADMIN_PENDING_2FA_COOKIE)
 }
 
-function adminTotpConfigured(secret?: string) {
+function adminTotpConfigured(secret?: string): secret is string {
   return typeof secret === "string" && secret.length > 0
 }
 
