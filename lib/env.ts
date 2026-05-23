@@ -4,6 +4,11 @@ function requireEnv(name: string): string {
   return value
 }
 
+function optionalEnv(name: string): string | undefined {
+  const value = process.env[name]?.trim()
+  return value ? value : undefined
+}
+
 /**
  * Server-only env (API routes, not client components).
  *
@@ -18,6 +23,13 @@ function requireEnv(name: string): string {
  * Treasury is an ADDRESS ONLY — no key on server.
  */
 export function getServerEnv() {
+  const adminPassword = optionalEnv('ADMIN_PASSWORD')
+  const adminPasswordHash = optionalEnv('ADMIN_PASSWORD_HASH')
+  const adminTotpSecret = optionalEnv('ADMIN_TOTP_SECRET')
+  if (!adminPassword && !adminPasswordHash) {
+    throw new Error('Missing required env var: ADMIN_PASSWORD_HASH or ADMIN_PASSWORD')
+  }
+
   return {
     ownerPrivateKey: process.env.OWNER_PRIVATE_KEY as `0x${string}` | undefined,
     serverPrivateKey: requireEnv('SERVER_PRIVATE_KEY') as `0x${string}`,
@@ -29,7 +41,10 @@ export function getServerEnv() {
     irysNetwork: (process.env.IRYS_NETWORK || 'devnet') as 'devnet' | 'mainnet',
 
     adminUsername: requireEnv('ADMIN_USERNAME'),
-    adminPassword: requireEnv('ADMIN_PASSWORD'), // plaintext, compared in constant time
+    adminPassword,
+    adminPasswordHash,
+    adminTotpSecret,
+    adminTotpIssuer: optionalEnv('ADMIN_TOTP_ISSUER') || 'SentinelETH Admin',
     jwtSecret: requireEnv('JWT_SECRET'),
   }
 }
@@ -47,7 +62,10 @@ export function getOptionalServerEnv() {
     irysRpcUrl: process.env.IRYS_RPC_URL,
     irysNetwork: (process.env.IRYS_NETWORK || 'devnet') as 'devnet' | 'mainnet',
     adminUsername: process.env.ADMIN_USERNAME,
-    adminPassword: process.env.ADMIN_PASSWORD,
+    adminPassword: optionalEnv('ADMIN_PASSWORD'),
+    adminPasswordHash: optionalEnv('ADMIN_PASSWORD_HASH'),
+    adminTotpSecret: optionalEnv('ADMIN_TOTP_SECRET'),
+    adminTotpIssuer: optionalEnv('ADMIN_TOTP_ISSUER') || 'SentinelETH Admin',
     jwtSecret: process.env.JWT_SECRET,
   }
 }

@@ -1,0 +1,1983 @@
+{
+  "version": 1,
+  "generatedAt": "2026-05-19T13:45:02.214Z",
+  "reviewStatus": "draft-current-config",
+  "contract": {
+    "name": "TraitRegistry",
+    "constructorArgs": [
+      "<ADMIN_SAFE_ADDRESS>",
+      "0x518205ebbc447ab8f5c639d49d64e9e081b72f8a31e83168de56bc4537378dc5",
+      "0x7c576b92f351de6c57b2ddc000d8ab634858f78a22e0d255ac9a19101ef80ba6",
+      "0xedea6fa8d47e0cedd4f3741f536c2f0468ac0634357a06e3b1ef2920de91cf5d",
+      "0xd9baec9b3692d839f371cb2d2d732ffe022a41cb5636d84daa938103fb08f7f2",
+      10000,
+      7,
+      112,
+      12
+    ],
+    "methods": [
+      "setLayerWeights(string[] layerIds,uint32[] weightsBps)",
+      "setTraitValues(string[] layerIds,string[] traitIds,uint32[] values)",
+      "setSynergyMultipliers(string[] synergyIds,uint32[] multipliersBps)",
+      "finalize()"
+    ]
+  },
+  "sourceFiles": {
+    "traits": "config/traits.json",
+    "powerConfig": "mining-sentinel/config/trait-power.json"
+  },
+  "hashes": {
+    "traitsSourceHash": "0x518205ebbc447ab8f5c639d49d64e9e081b72f8a31e83168de56bc4537378dc5",
+    "powerConfigHash": "0x7c576b92f351de6c57b2ddc000d8ab634858f78a22e0d255ac9a19101ef80ba6",
+    "synergyRulesHash": "0xedea6fa8d47e0cedd4f3741f536c2f0468ac0634357a06e3b1ef2920de91cf5d",
+    "rulesCommitment": "0xd9baec9b3692d839f371cb2d2d732ffe022a41cb5636d84daa938103fb08f7f2"
+  },
+  "collectionCap": 10000,
+  "counts": {
+    "layers": 7,
+    "traits": 112,
+    "synergies": 12
+  },
+  "layerWeights": {
+    "layerIds": [
+      "background",
+      "back",
+      "body",
+      "mouth",
+      "eyes",
+      "eyewear",
+      "head_items"
+    ],
+    "weightsBps": [
+      800,
+      1000,
+      2000,
+      400,
+      1500,
+      1200,
+      1100
+    ]
+  },
+  "traitValueBatches": [
+    {
+      "index": 0,
+      "count": 50,
+      "layerIds": [
+        "background",
+        "background",
+        "background",
+        "background",
+        "background",
+        "background",
+        "background",
+        "background",
+        "background",
+        "background",
+        "background",
+        "background",
+        "background",
+        "background",
+        "background",
+        "background",
+        "background",
+        "background",
+        "background",
+        "back",
+        "back",
+        "back",
+        "back",
+        "back",
+        "back",
+        "back",
+        "back",
+        "back",
+        "back",
+        "back",
+        "back",
+        "back",
+        "back",
+        "back",
+        "body",
+        "body",
+        "body",
+        "body",
+        "body",
+        "body",
+        "body",
+        "body",
+        "body",
+        "body",
+        "body",
+        "body",
+        "body",
+        "body",
+        "body",
+        "body"
+      ],
+      "traitIds": [
+        "assembly_line",
+        "circuit_sky",
+        "code_waterfall",
+        "cyber_graveyard",
+        "data_stream",
+        "digital_forest",
+        "glitch_dimension",
+        "neon_alleyway",
+        "server_room",
+        "space_station",
+        "system_error",
+        "the_construct",
+        "the_core",
+        "the_grid",
+        "underground_bunker",
+        "0d190b",
+        "123d08",
+        "313540",
+        "421d03",
+        "battery_pack",
+        "cape_of_wires",
+        "cooling_radiator",
+        "cyber_katana",
+        "gravity_orb",
+        "hack_pack",
+        "jetpack",
+        "matrix_jack",
+        "oxygen_tanks",
+        "plasma_rifle",
+        "satellite_probe",
+        "shield_generator",
+        "solar_wings",
+        "spider_arms",
+        "spy_camera",
+        "battle_damaged",
+        "carbon_fiber",
+        "chrome_plated",
+        "circuit_board",
+        "deep_sea",
+        "industrial_hazard",
+        "led_grid",
+        "matrix_rain",
+        "nano_suit",
+        "og_with_lights",
+        "prototype",
+        "royal_gold",
+        "rusty_scraps",
+        "space_explorer",
+        "stealth_camo",
+        "void_armor"
+      ],
+      "values": [
+        5,
+        5,
+        10,
+        10,
+        10,
+        10,
+        50,
+        20,
+        10,
+        20,
+        20,
+        50,
+        100,
+        20,
+        10,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        5,
+        50,
+        20,
+        10,
+        50,
+        20,
+        5,
+        100,
+        10,
+        20,
+        20,
+        10,
+        10,
+        5,
+        5,
+        20,
+        20,
+        20,
+        5,
+        20,
+        20,
+        50,
+        50,
+        50,
+        100,
+        5,
+        50,
+        20,
+        100
+      ]
+    },
+    {
+      "index": 1,
+      "count": 50,
+      "layerIds": [
+        "mouth",
+        "mouth",
+        "mouth",
+        "mouth",
+        "mouth",
+        "mouth",
+        "mouth",
+        "mouth",
+        "mouth",
+        "mouth",
+        "mouth",
+        "mouth",
+        "mouth",
+        "mouth",
+        "mouth",
+        "mouth",
+        "eyes",
+        "eyes",
+        "eyes",
+        "eyes",
+        "eyes",
+        "eyes",
+        "eyes",
+        "eyes",
+        "eyes",
+        "eyes",
+        "eyes",
+        "eyes",
+        "eyes",
+        "eyes",
+        "eyes",
+        "eyes",
+        "eyewear",
+        "eyewear",
+        "eyewear",
+        "eyewear",
+        "eyewear",
+        "eyewear",
+        "eyewear",
+        "eyewear",
+        "eyewear",
+        "eyewear",
+        "eyewear",
+        "eyewear",
+        "eyewear",
+        "eyewear",
+        "eyewear",
+        "head_items",
+        "head_items",
+        "head_items"
+      ],
+      "traitIds": [
+        "binary_stitches",
+        "bio_mechanical",
+        "data_port",
+        "energy_core_vent",
+        "exhaust_pipe",
+        "exposed_hydraulics",
+        "hazard_tape",
+        "heatsink_grille",
+        "liquid_metal",
+        "og",
+        "respirator",
+        "sealed_plate",
+        "serial_number",
+        "speaker_mesh",
+        "ventilation_fan",
+        "voice_waveform",
+        "binary_stream",
+        "cyclops_beam",
+        "dead_pixel",
+        "diamond_core",
+        "glitch_blink",
+        "heartbeat_monitor",
+        "heatmap",
+        "hexgrid_honeycomb",
+        "hollow_sockets",
+        "loading_ring",
+        "neural_link",
+        "og",
+        "radar_sweep",
+        "targeting_reticle",
+        "triple_threat",
+        "x_ray",
+        "ar_glasses",
+        "blindfold_overlay",
+        "carbon_fiber_band",
+        "data_visor",
+        "energy_crown",
+        "holographic_hud",
+        "magnifying_lens",
+        "night_vision",
+        "scanning_laser",
+        "scouter",
+        "shattered_shield",
+        "solar_shield",
+        "tactical_monocle",
+        "vr_goggles",
+        "welding_mask",
+        "armor_plating",
+        "brain_case",
+        "cooling_tubes"
+      ],
+      "values": [
+        5,
+        20,
+        10,
+        50,
+        5,
+        10,
+        5,
+        10,
+        20,
+        100,
+        10,
+        5,
+        5,
+        5,
+        10,
+        20,
+        10,
+        50,
+        5,
+        100,
+        10,
+        5,
+        10,
+        10,
+        5,
+        5,
+        20,
+        50,
+        20,
+        20,
+        100,
+        20,
+        20,
+        5,
+        5,
+        10,
+        100,
+        20,
+        5,
+        20,
+        10,
+        20,
+        5,
+        10,
+        10,
+        10,
+        5,
+        5,
+        50,
+        5
+      ]
+    },
+    {
+      "index": 2,
+      "count": 12,
+      "layerIds": [
+        "head_items",
+        "head_items",
+        "head_items",
+        "head_items",
+        "head_items",
+        "head_items",
+        "head_items",
+        "head_items",
+        "head_items",
+        "head_items",
+        "head_items",
+        "head_items"
+      ],
+      "traitIds": [
+        "horn_vents",
+        "micro_drone_dock",
+        "mohawk_cables",
+        "neuro_link_cable",
+        "radar_fin",
+        "satellite_dish",
+        "security_camera",
+        "signal_jammer",
+        "tesla_coil",
+        "twin_antennas",
+        "warning_strobe",
+        "wi_fi_halo"
+      ],
+      "values": [
+        5,
+        20,
+        10,
+        20,
+        10,
+        50,
+        10,
+        20,
+        100,
+        10,
+        5,
+        10
+      ]
+    }
+  ],
+  "synergyMultipliers": {
+    "synergyIds": [
+      "og_brand_set",
+      "stealth_patrol",
+      "combat_loadout",
+      "network_node",
+      "space_explorer",
+      "energy_core",
+      "surveillance_grid",
+      "royal_sentinel",
+      "wired_mind",
+      "glitch_anomaly",
+      "matrix_operator",
+      "cooling_stack"
+    ],
+    "multipliersBps": [
+      20000,
+      17000,
+      16000,
+      16000,
+      16000,
+      15000,
+      14000,
+      14000,
+      13000,
+      13000,
+      13000,
+      12000
+    ]
+  },
+  "rows": {
+    "layerRows": [
+      {
+        "layerId": "background",
+        "name": "Background",
+        "order": 0,
+        "required": true,
+        "weightBps": 800
+      },
+      {
+        "layerId": "back",
+        "name": "Back",
+        "order": 1,
+        "required": false,
+        "weightBps": 1000
+      },
+      {
+        "layerId": "body",
+        "name": "Body",
+        "order": 2,
+        "required": true,
+        "weightBps": 2000
+      },
+      {
+        "layerId": "mouth",
+        "name": "Mouth",
+        "order": 3,
+        "required": false,
+        "weightBps": 400
+      },
+      {
+        "layerId": "eyes",
+        "name": "Eyes",
+        "order": 4,
+        "required": false,
+        "weightBps": 1500
+      },
+      {
+        "layerId": "eyewear",
+        "name": "Eyewear",
+        "order": 5,
+        "required": false,
+        "weightBps": 1200
+      },
+      {
+        "layerId": "head_items",
+        "name": "Head Items",
+        "order": 6,
+        "required": false,
+        "weightBps": 1100
+      }
+    ],
+    "traitRows": [
+      {
+        "layerId": "background",
+        "layerName": "Background",
+        "traitId": "assembly_line",
+        "traitName": "Assembly Line",
+        "tier": "common",
+        "value": 5,
+        "weightedValue": 4,
+        "file": "0-background/assembly_line.png"
+      },
+      {
+        "layerId": "background",
+        "layerName": "Background",
+        "traitId": "circuit_sky",
+        "traitName": "Circuit Sky",
+        "tier": "common",
+        "value": 5,
+        "weightedValue": 4,
+        "file": "0-background/circuit_sky.png"
+      },
+      {
+        "layerId": "background",
+        "layerName": "Background",
+        "traitId": "code_waterfall",
+        "traitName": "Code Waterfall",
+        "tier": "uncommon",
+        "value": 10,
+        "weightedValue": 8,
+        "file": "0-background/code_waterfall.png"
+      },
+      {
+        "layerId": "background",
+        "layerName": "Background",
+        "traitId": "cyber_graveyard",
+        "traitName": "Cyber-Graveyard",
+        "tier": "uncommon",
+        "value": 10,
+        "weightedValue": 8,
+        "file": "0-background/cyber_graveyard.png"
+      },
+      {
+        "layerId": "background",
+        "layerName": "Background",
+        "traitId": "data_stream",
+        "traitName": "Data Stream",
+        "tier": "uncommon",
+        "value": 10,
+        "weightedValue": 8,
+        "file": "0-background/data_stream.png"
+      },
+      {
+        "layerId": "background",
+        "layerName": "Background",
+        "traitId": "digital_forest",
+        "traitName": "Digital Forest",
+        "tier": "uncommon",
+        "value": 10,
+        "weightedValue": 8,
+        "file": "0-background/digital_forest.png"
+      },
+      {
+        "layerId": "background",
+        "layerName": "Background",
+        "traitId": "glitch_dimension",
+        "traitName": "Glitch Dimension",
+        "tier": "legendary",
+        "value": 50,
+        "weightedValue": 40,
+        "file": "0-background/glitch_dimension.png"
+      },
+      {
+        "layerId": "background",
+        "layerName": "Background",
+        "traitId": "neon_alleyway",
+        "traitName": "Neon Alleyway",
+        "tier": "rare",
+        "value": 20,
+        "weightedValue": 16,
+        "file": "0-background/neon_alleyway.png"
+      },
+      {
+        "layerId": "background",
+        "layerName": "Background",
+        "traitId": "server_room",
+        "traitName": "Server Room",
+        "tier": "uncommon",
+        "value": 10,
+        "weightedValue": 8,
+        "file": "0-background/server_room.png"
+      },
+      {
+        "layerId": "background",
+        "layerName": "Background",
+        "traitId": "space_station",
+        "traitName": "Space Station",
+        "tier": "rare",
+        "value": 20,
+        "weightedValue": 16,
+        "file": "0-background/space_station.png"
+      },
+      {
+        "layerId": "background",
+        "layerName": "Background",
+        "traitId": "system_error",
+        "traitName": "System Error",
+        "tier": "rare",
+        "value": 20,
+        "weightedValue": 16,
+        "file": "0-background/system_error.png"
+      },
+      {
+        "layerId": "background",
+        "layerName": "Background",
+        "traitId": "the_construct",
+        "traitName": "The Construct",
+        "tier": "legendary",
+        "value": 50,
+        "weightedValue": 40,
+        "file": "0-background/the_construct.png"
+      },
+      {
+        "layerId": "background",
+        "layerName": "Background",
+        "traitId": "the_core",
+        "traitName": "The Core",
+        "tier": "mythic",
+        "value": 100,
+        "weightedValue": 80,
+        "file": "0-background/the_core.png"
+      },
+      {
+        "layerId": "background",
+        "layerName": "Background",
+        "traitId": "the_grid",
+        "traitName": "The Grid",
+        "tier": "rare",
+        "value": 20,
+        "weightedValue": 16,
+        "file": "0-background/the_grid.png"
+      },
+      {
+        "layerId": "background",
+        "layerName": "Background",
+        "traitId": "underground_bunker",
+        "traitName": "Underground Bunker",
+        "tier": "uncommon",
+        "value": 10,
+        "weightedValue": 8,
+        "file": "0-background/underground_bunker.png"
+      },
+      {
+        "layerId": "background",
+        "layerName": "Background",
+        "traitId": "0d190b",
+        "traitName": "#0D190B",
+        "tier": "common",
+        "value": 5,
+        "weightedValue": 4,
+        "file": "0-background/0d190b.png"
+      },
+      {
+        "layerId": "background",
+        "layerName": "Background",
+        "traitId": "123d08",
+        "traitName": "#123D08",
+        "tier": "common",
+        "value": 5,
+        "weightedValue": 4,
+        "file": "0-background/123d08.png"
+      },
+      {
+        "layerId": "background",
+        "layerName": "Background",
+        "traitId": "313540",
+        "traitName": "#313540",
+        "tier": "common",
+        "value": 5,
+        "weightedValue": 4,
+        "file": "0-background/313540.png"
+      },
+      {
+        "layerId": "background",
+        "layerName": "Background",
+        "traitId": "421d03",
+        "traitName": "#421D03",
+        "tier": "common",
+        "value": 5,
+        "weightedValue": 4,
+        "file": "0-background/421d03.png"
+      },
+      {
+        "layerId": "back",
+        "layerName": "Back",
+        "traitId": "battery_pack",
+        "traitName": "Battery Pack",
+        "tier": "common",
+        "value": 5,
+        "weightedValue": 5,
+        "file": "1-back/battery_pack.png"
+      },
+      {
+        "layerId": "back",
+        "layerName": "Back",
+        "traitId": "cape_of_wires",
+        "traitName": "Cape of Wires",
+        "tier": "common",
+        "value": 5,
+        "weightedValue": 5,
+        "file": "1-back/cape_of_wires.png"
+      },
+      {
+        "layerId": "back",
+        "layerName": "Back",
+        "traitId": "cooling_radiator",
+        "traitName": "Cooling Radiator",
+        "tier": "common",
+        "value": 5,
+        "weightedValue": 5,
+        "file": "1-back/cooling_radiator.png"
+      },
+      {
+        "layerId": "back",
+        "layerName": "Back",
+        "traitId": "cyber_katana",
+        "traitName": "Cyber Katana",
+        "tier": "legendary",
+        "value": 50,
+        "weightedValue": 50,
+        "file": "1-back/cyber_katana.png"
+      },
+      {
+        "layerId": "back",
+        "layerName": "Back",
+        "traitId": "gravity_orb",
+        "traitName": "Gravity Orb",
+        "tier": "rare",
+        "value": 20,
+        "weightedValue": 20,
+        "file": "1-back/gravity_orb.png"
+      },
+      {
+        "layerId": "back",
+        "layerName": "Back",
+        "traitId": "hack_pack",
+        "traitName": "Hack-Pack",
+        "tier": "uncommon",
+        "value": 10,
+        "weightedValue": 10,
+        "file": "1-back/hack_pack.png"
+      },
+      {
+        "layerId": "back",
+        "layerName": "Back",
+        "traitId": "jetpack",
+        "traitName": "Jetpack",
+        "tier": "legendary",
+        "value": 50,
+        "weightedValue": 50,
+        "file": "1-back/jetpack.png"
+      },
+      {
+        "layerId": "back",
+        "layerName": "Back",
+        "traitId": "matrix_jack",
+        "traitName": "Matrix Jack",
+        "tier": "rare",
+        "value": 20,
+        "weightedValue": 20,
+        "file": "1-back/matrix_jack.png"
+      },
+      {
+        "layerId": "back",
+        "layerName": "Back",
+        "traitId": "oxygen_tanks",
+        "traitName": "Oxygen Tanks",
+        "tier": "common",
+        "value": 5,
+        "weightedValue": 5,
+        "file": "1-back/oxygen_tanks.png"
+      },
+      {
+        "layerId": "back",
+        "layerName": "Back",
+        "traitId": "plasma_rifle",
+        "traitName": "Plasma Rifle",
+        "tier": "mythic",
+        "value": 100,
+        "weightedValue": 100,
+        "file": "1-back/plasma_rifle.png"
+      },
+      {
+        "layerId": "back",
+        "layerName": "Back",
+        "traitId": "satellite_probe",
+        "traitName": "Satellite Probe",
+        "tier": "uncommon",
+        "value": 10,
+        "weightedValue": 10,
+        "file": "1-back/satellite_probe.png"
+      },
+      {
+        "layerId": "back",
+        "layerName": "Back",
+        "traitId": "shield_generator",
+        "traitName": "Shield Generator",
+        "tier": "rare",
+        "value": 20,
+        "weightedValue": 20,
+        "file": "1-back/shield_generator.png"
+      },
+      {
+        "layerId": "back",
+        "layerName": "Back",
+        "traitId": "solar_wings",
+        "traitName": "Solar Wings",
+        "tier": "rare",
+        "value": 20,
+        "weightedValue": 20,
+        "file": "1-back/solar_wings.png"
+      },
+      {
+        "layerId": "back",
+        "layerName": "Back",
+        "traitId": "spider_arms",
+        "traitName": "Spider Arms",
+        "tier": "uncommon",
+        "value": 10,
+        "weightedValue": 10,
+        "file": "1-back/spider_arms.png"
+      },
+      {
+        "layerId": "back",
+        "layerName": "Back",
+        "traitId": "spy_camera",
+        "traitName": "Spy Camera",
+        "tier": "uncommon",
+        "value": 10,
+        "weightedValue": 10,
+        "file": "1-back/spy_camera.png"
+      },
+      {
+        "layerId": "body",
+        "layerName": "Body",
+        "traitId": "battle_damaged",
+        "traitName": "Battle Damaged",
+        "tier": "common",
+        "value": 5,
+        "weightedValue": 10,
+        "file": "2-body/battle_damaged.png"
+      },
+      {
+        "layerId": "body",
+        "layerName": "Body",
+        "traitId": "carbon_fiber",
+        "traitName": "Carbon Fiber",
+        "tier": "common",
+        "value": 5,
+        "weightedValue": 10,
+        "file": "2-body/carbon_fiber.png"
+      },
+      {
+        "layerId": "body",
+        "layerName": "Body",
+        "traitId": "chrome_plated",
+        "traitName": "Chrome Plated",
+        "tier": "rare",
+        "value": 20,
+        "weightedValue": 40,
+        "file": "2-body/chrome_plated.png"
+      },
+      {
+        "layerId": "body",
+        "layerName": "Body",
+        "traitId": "circuit_board",
+        "traitName": "Circuit Board",
+        "tier": "rare",
+        "value": 20,
+        "weightedValue": 40,
+        "file": "2-body/circuit_board.png"
+      },
+      {
+        "layerId": "body",
+        "layerName": "Body",
+        "traitId": "deep_sea",
+        "traitName": "Deep Sea",
+        "tier": "rare",
+        "value": 20,
+        "weightedValue": 40,
+        "file": "2-body/deep_sea.png"
+      },
+      {
+        "layerId": "body",
+        "layerName": "Body",
+        "traitId": "industrial_hazard",
+        "traitName": "Industrial Hazard",
+        "tier": "common",
+        "value": 5,
+        "weightedValue": 10,
+        "file": "2-body/industrial_hazard.png"
+      },
+      {
+        "layerId": "body",
+        "layerName": "Body",
+        "traitId": "led_grid",
+        "traitName": "LED Grid",
+        "tier": "rare",
+        "value": 20,
+        "weightedValue": 40,
+        "file": "2-body/led_grid.png"
+      },
+      {
+        "layerId": "body",
+        "layerName": "Body",
+        "traitId": "matrix_rain",
+        "traitName": "Matrix Rain",
+        "tier": "rare",
+        "value": 20,
+        "weightedValue": 40,
+        "file": "2-body/matrix_rain.png"
+      },
+      {
+        "layerId": "body",
+        "layerName": "Body",
+        "traitId": "nano_suit",
+        "traitName": "Nano Suit",
+        "tier": "legendary",
+        "value": 50,
+        "weightedValue": 100,
+        "file": "2-body/nano_suit.png"
+      },
+      {
+        "layerId": "body",
+        "layerName": "Body",
+        "traitId": "og_with_lights",
+        "traitName": "OG with Lights",
+        "tier": "legendary",
+        "value": 50,
+        "weightedValue": 100,
+        "file": "2-body/og_with_lights.png"
+      },
+      {
+        "layerId": "body",
+        "layerName": "Body",
+        "traitId": "prototype",
+        "traitName": "Prototype",
+        "tier": "legendary",
+        "value": 50,
+        "weightedValue": 100,
+        "file": "2-body/prototype.png"
+      },
+      {
+        "layerId": "body",
+        "layerName": "Body",
+        "traitId": "royal_gold",
+        "traitName": "Royal Gold",
+        "tier": "mythic",
+        "value": 100,
+        "weightedValue": 200,
+        "file": "2-body/royal_gold.png"
+      },
+      {
+        "layerId": "body",
+        "layerName": "Body",
+        "traitId": "rusty_scraps",
+        "traitName": "Rusty Scraps",
+        "tier": "common",
+        "value": 5,
+        "weightedValue": 10,
+        "file": "2-body/rusty_scraps.png"
+      },
+      {
+        "layerId": "body",
+        "layerName": "Body",
+        "traitId": "space_explorer",
+        "traitName": "Space Explorer",
+        "tier": "legendary",
+        "value": 50,
+        "weightedValue": 100,
+        "file": "2-body/space_explorer.png"
+      },
+      {
+        "layerId": "body",
+        "layerName": "Body",
+        "traitId": "stealth_camo",
+        "traitName": "Stealth Camo",
+        "tier": "rare",
+        "value": 20,
+        "weightedValue": 40,
+        "file": "2-body/stealth_camo.png"
+      },
+      {
+        "layerId": "body",
+        "layerName": "Body",
+        "traitId": "void_armor",
+        "traitName": "Void Armor",
+        "tier": "mythic",
+        "value": 100,
+        "weightedValue": 200,
+        "file": "2-body/void_armor.png"
+      },
+      {
+        "layerId": "mouth",
+        "layerName": "Mouth",
+        "traitId": "binary_stitches",
+        "traitName": "Binary Stitches",
+        "tier": "common",
+        "value": 5,
+        "weightedValue": 2,
+        "file": "3-mouth/binary_stitches.png"
+      },
+      {
+        "layerId": "mouth",
+        "layerName": "Mouth",
+        "traitId": "bio_mechanical",
+        "traitName": "Bio-Mechanical",
+        "tier": "rare",
+        "value": 20,
+        "weightedValue": 8,
+        "file": "3-mouth/bio_mechanical.png"
+      },
+      {
+        "layerId": "mouth",
+        "layerName": "Mouth",
+        "traitId": "data_port",
+        "traitName": "Data Port",
+        "tier": "uncommon",
+        "value": 10,
+        "weightedValue": 4,
+        "file": "3-mouth/data_port.png"
+      },
+      {
+        "layerId": "mouth",
+        "layerName": "Mouth",
+        "traitId": "energy_core_vent",
+        "traitName": "Energy Core Vent",
+        "tier": "legendary",
+        "value": 50,
+        "weightedValue": 20,
+        "file": "3-mouth/energy_core_vent.png"
+      },
+      {
+        "layerId": "mouth",
+        "layerName": "Mouth",
+        "traitId": "exhaust_pipe",
+        "traitName": "Exhaust Pipe",
+        "tier": "common",
+        "value": 5,
+        "weightedValue": 2,
+        "file": "3-mouth/exhaust_pipe.png"
+      },
+      {
+        "layerId": "mouth",
+        "layerName": "Mouth",
+        "traitId": "exposed_hydraulics",
+        "traitName": "Exposed Hydraulics",
+        "tier": "uncommon",
+        "value": 10,
+        "weightedValue": 4,
+        "file": "3-mouth/exposed_hydraulics.png"
+      },
+      {
+        "layerId": "mouth",
+        "layerName": "Mouth",
+        "traitId": "hazard_tape",
+        "traitName": "Hazard Tape",
+        "tier": "common",
+        "value": 5,
+        "weightedValue": 2,
+        "file": "3-mouth/hazard_tape.png"
+      },
+      {
+        "layerId": "mouth",
+        "layerName": "Mouth",
+        "traitId": "heatsink_grille",
+        "traitName": "Heatsink Grille",
+        "tier": "uncommon",
+        "value": 10,
+        "weightedValue": 4,
+        "file": "3-mouth/heatsink_grille.png"
+      },
+      {
+        "layerId": "mouth",
+        "layerName": "Mouth",
+        "traitId": "liquid_metal",
+        "traitName": "Liquid Metal",
+        "tier": "rare",
+        "value": 20,
+        "weightedValue": 8,
+        "file": "3-mouth/liquid_metal.png"
+      },
+      {
+        "layerId": "mouth",
+        "layerName": "Mouth",
+        "traitId": "og",
+        "traitName": "OG",
+        "tier": "mythic",
+        "value": 100,
+        "weightedValue": 40,
+        "file": "3-mouth/og.png"
+      },
+      {
+        "layerId": "mouth",
+        "layerName": "Mouth",
+        "traitId": "respirator",
+        "traitName": "Respirator",
+        "tier": "uncommon",
+        "value": 10,
+        "weightedValue": 4,
+        "file": "3-mouth/respirator.png"
+      },
+      {
+        "layerId": "mouth",
+        "layerName": "Mouth",
+        "traitId": "sealed_plate",
+        "traitName": "Sealed Plate",
+        "tier": "common",
+        "value": 5,
+        "weightedValue": 2,
+        "file": "3-mouth/sealed_plate.png"
+      },
+      {
+        "layerId": "mouth",
+        "layerName": "Mouth",
+        "traitId": "serial_number",
+        "traitName": "Serial Number",
+        "tier": "common",
+        "value": 5,
+        "weightedValue": 2,
+        "file": "3-mouth/serial_number.png"
+      },
+      {
+        "layerId": "mouth",
+        "layerName": "Mouth",
+        "traitId": "speaker_mesh",
+        "traitName": "Speaker Mesh",
+        "tier": "common",
+        "value": 5,
+        "weightedValue": 2,
+        "file": "3-mouth/speaker_mesh.png"
+      },
+      {
+        "layerId": "mouth",
+        "layerName": "Mouth",
+        "traitId": "ventilation_fan",
+        "traitName": "Ventilation Fan",
+        "tier": "uncommon",
+        "value": 10,
+        "weightedValue": 4,
+        "file": "3-mouth/ventilation_fan.png"
+      },
+      {
+        "layerId": "mouth",
+        "layerName": "Mouth",
+        "traitId": "voice_waveform",
+        "traitName": "Voice Waveform",
+        "tier": "rare",
+        "value": 20,
+        "weightedValue": 8,
+        "file": "3-mouth/voice_waveform.png"
+      },
+      {
+        "layerId": "eyes",
+        "layerName": "Eyes",
+        "traitId": "binary_stream",
+        "traitName": "Binary Stream",
+        "tier": "uncommon",
+        "value": 10,
+        "weightedValue": 15,
+        "file": "4-eyes/binary_stream.png"
+      },
+      {
+        "layerId": "eyes",
+        "layerName": "Eyes",
+        "traitId": "cyclops_beam",
+        "traitName": "Cyclops Beam",
+        "tier": "legendary",
+        "value": 50,
+        "weightedValue": 75,
+        "file": "4-eyes/cyclops_beam.png"
+      },
+      {
+        "layerId": "eyes",
+        "layerName": "Eyes",
+        "traitId": "dead_pixel",
+        "traitName": "Dead Pixel",
+        "tier": "common",
+        "value": 5,
+        "weightedValue": 7.5,
+        "file": "4-eyes/dead_pixel.png"
+      },
+      {
+        "layerId": "eyes",
+        "layerName": "Eyes",
+        "traitId": "diamond_core",
+        "traitName": "Diamond Core",
+        "tier": "mythic",
+        "value": 100,
+        "weightedValue": 150,
+        "file": "4-eyes/diamond_core.png"
+      },
+      {
+        "layerId": "eyes",
+        "layerName": "Eyes",
+        "traitId": "glitch_blink",
+        "traitName": "Glitch Blink",
+        "tier": "uncommon",
+        "value": 10,
+        "weightedValue": 15,
+        "file": "4-eyes/glitch_blink.png"
+      },
+      {
+        "layerId": "eyes",
+        "layerName": "Eyes",
+        "traitId": "heartbeat_monitor",
+        "traitName": "Heartbeat Monitor",
+        "tier": "common",
+        "value": 5,
+        "weightedValue": 7.5,
+        "file": "4-eyes/heartbeat_monitor.png"
+      },
+      {
+        "layerId": "eyes",
+        "layerName": "Eyes",
+        "traitId": "heatmap",
+        "traitName": "Heatmap",
+        "tier": "uncommon",
+        "value": 10,
+        "weightedValue": 15,
+        "file": "4-eyes/heatmap.png"
+      },
+      {
+        "layerId": "eyes",
+        "layerName": "Eyes",
+        "traitId": "hexgrid_honeycomb",
+        "traitName": "HexGrid - HoneyComb",
+        "tier": "uncommon",
+        "value": 10,
+        "weightedValue": 15,
+        "file": "4-eyes/hexgrid_honeycomb.png"
+      },
+      {
+        "layerId": "eyes",
+        "layerName": "Eyes",
+        "traitId": "hollow_sockets",
+        "traitName": "Hollow Sockets",
+        "tier": "common",
+        "value": 5,
+        "weightedValue": 7.5,
+        "file": "4-eyes/hollow_sockets.png"
+      },
+      {
+        "layerId": "eyes",
+        "layerName": "Eyes",
+        "traitId": "loading_ring",
+        "traitName": "Loading Ring",
+        "tier": "common",
+        "value": 5,
+        "weightedValue": 7.5,
+        "file": "4-eyes/loading_ring.png"
+      },
+      {
+        "layerId": "eyes",
+        "layerName": "Eyes",
+        "traitId": "neural_link",
+        "traitName": "Neural Link",
+        "tier": "rare",
+        "value": 20,
+        "weightedValue": 30,
+        "file": "4-eyes/neural_link.png"
+      },
+      {
+        "layerId": "eyes",
+        "layerName": "Eyes",
+        "traitId": "og",
+        "traitName": "OG",
+        "tier": "legendary",
+        "value": 50,
+        "weightedValue": 75,
+        "file": "4-eyes/og.png"
+      },
+      {
+        "layerId": "eyes",
+        "layerName": "Eyes",
+        "traitId": "radar_sweep",
+        "traitName": "Radar Sweep",
+        "tier": "rare",
+        "value": 20,
+        "weightedValue": 30,
+        "file": "4-eyes/radar_sweep.png"
+      },
+      {
+        "layerId": "eyes",
+        "layerName": "Eyes",
+        "traitId": "targeting_reticle",
+        "traitName": "Targeting Reticle",
+        "tier": "rare",
+        "value": 20,
+        "weightedValue": 30,
+        "file": "4-eyes/targeting_reticle.png"
+      },
+      {
+        "layerId": "eyes",
+        "layerName": "Eyes",
+        "traitId": "triple_threat",
+        "traitName": "Triple Threat",
+        "tier": "mythic",
+        "value": 100,
+        "weightedValue": 150,
+        "file": "4-eyes/triple_threat.png"
+      },
+      {
+        "layerId": "eyes",
+        "layerName": "Eyes",
+        "traitId": "x_ray",
+        "traitName": "X-Ray",
+        "tier": "rare",
+        "value": 20,
+        "weightedValue": 30,
+        "file": "4-eyes/x_ray.png"
+      },
+      {
+        "layerId": "eyewear",
+        "layerName": "Eyewear",
+        "traitId": "ar_glasses",
+        "traitName": "AR Glasses",
+        "tier": "rare",
+        "value": 20,
+        "weightedValue": 24,
+        "file": "5-eyewear/ar_glasses.png"
+      },
+      {
+        "layerId": "eyewear",
+        "layerName": "Eyewear",
+        "traitId": "blindfold_overlay",
+        "traitName": "Blindfold Overlay",
+        "tier": "common",
+        "value": 5,
+        "weightedValue": 6,
+        "file": "5-eyewear/blindfold_overlay.png"
+      },
+      {
+        "layerId": "eyewear",
+        "layerName": "Eyewear",
+        "traitId": "carbon_fiber_band",
+        "traitName": "Carbon Fiber Band",
+        "tier": "common",
+        "value": 5,
+        "weightedValue": 6,
+        "file": "5-eyewear/carbon_fiber_band.png"
+      },
+      {
+        "layerId": "eyewear",
+        "layerName": "Eyewear",
+        "traitId": "data_visor",
+        "traitName": "Data Visor",
+        "tier": "uncommon",
+        "value": 10,
+        "weightedValue": 12,
+        "file": "5-eyewear/data_visor.png"
+      },
+      {
+        "layerId": "eyewear",
+        "layerName": "Eyewear",
+        "traitId": "energy_crown",
+        "traitName": "Energy Crown",
+        "tier": "mythic",
+        "value": 100,
+        "weightedValue": 120,
+        "file": "5-eyewear/energy_crown.png"
+      },
+      {
+        "layerId": "eyewear",
+        "layerName": "Eyewear",
+        "traitId": "holographic_hud",
+        "traitName": "Holographic HUD",
+        "tier": "rare",
+        "value": 20,
+        "weightedValue": 24,
+        "file": "5-eyewear/holographic_hud.png"
+      },
+      {
+        "layerId": "eyewear",
+        "layerName": "Eyewear",
+        "traitId": "magnifying_lens",
+        "traitName": "Magnifying Lens",
+        "tier": "common",
+        "value": 5,
+        "weightedValue": 6,
+        "file": "5-eyewear/magnifying_lens.png"
+      },
+      {
+        "layerId": "eyewear",
+        "layerName": "Eyewear",
+        "traitId": "night_vision",
+        "traitName": "Night Vision",
+        "tier": "rare",
+        "value": 20,
+        "weightedValue": 24,
+        "file": "5-eyewear/night_vision.png"
+      },
+      {
+        "layerId": "eyewear",
+        "layerName": "Eyewear",
+        "traitId": "scanning_laser",
+        "traitName": "Scanning Laser",
+        "tier": "uncommon",
+        "value": 10,
+        "weightedValue": 12,
+        "file": "5-eyewear/scanning_laser.png"
+      },
+      {
+        "layerId": "eyewear",
+        "layerName": "Eyewear",
+        "traitId": "scouter",
+        "traitName": "Scouter",
+        "tier": "rare",
+        "value": 20,
+        "weightedValue": 24,
+        "file": "5-eyewear/scouter.png"
+      },
+      {
+        "layerId": "eyewear",
+        "layerName": "Eyewear",
+        "traitId": "shattered_shield",
+        "traitName": "Shattered Shield",
+        "tier": "common",
+        "value": 5,
+        "weightedValue": 6,
+        "file": "5-eyewear/shattered_shield.png"
+      },
+      {
+        "layerId": "eyewear",
+        "layerName": "Eyewear",
+        "traitId": "solar_shield",
+        "traitName": "Solar Shield",
+        "tier": "uncommon",
+        "value": 10,
+        "weightedValue": 12,
+        "file": "5-eyewear/solar_shield.png"
+      },
+      {
+        "layerId": "eyewear",
+        "layerName": "Eyewear",
+        "traitId": "tactical_monocle",
+        "traitName": "Tactical Monocle",
+        "tier": "uncommon",
+        "value": 10,
+        "weightedValue": 12,
+        "file": "5-eyewear/tactical_monocle.png"
+      },
+      {
+        "layerId": "eyewear",
+        "layerName": "Eyewear",
+        "traitId": "vr_goggles",
+        "traitName": "VR Goggles",
+        "tier": "uncommon",
+        "value": 10,
+        "weightedValue": 12,
+        "file": "5-eyewear/vr_goggles.png"
+      },
+      {
+        "layerId": "eyewear",
+        "layerName": "Eyewear",
+        "traitId": "welding_mask",
+        "traitName": "Welding Mask",
+        "tier": "common",
+        "value": 5,
+        "weightedValue": 6,
+        "file": "5-eyewear/welding_mask.png"
+      },
+      {
+        "layerId": "head_items",
+        "layerName": "Head Items",
+        "traitId": "armor_plating",
+        "traitName": "Armor Plating",
+        "tier": "common",
+        "value": 5,
+        "weightedValue": 5.5,
+        "file": "6-head_items/armor_plating.png"
+      },
+      {
+        "layerId": "head_items",
+        "layerName": "Head Items",
+        "traitId": "brain_case",
+        "traitName": "Brain Case",
+        "tier": "legendary",
+        "value": 50,
+        "weightedValue": 55,
+        "file": "6-head_items/brain_case.png"
+      },
+      {
+        "layerId": "head_items",
+        "layerName": "Head Items",
+        "traitId": "cooling_tubes",
+        "traitName": "Cooling Tubes",
+        "tier": "common",
+        "value": 5,
+        "weightedValue": 5.5,
+        "file": "6-head_items/cooling_tubes.png"
+      },
+      {
+        "layerId": "head_items",
+        "layerName": "Head Items",
+        "traitId": "horn_vents",
+        "traitName": "Horn Vents",
+        "tier": "common",
+        "value": 5,
+        "weightedValue": 5.5,
+        "file": "6-head_items/horn_vents.png"
+      },
+      {
+        "layerId": "head_items",
+        "layerName": "Head Items",
+        "traitId": "micro_drone_dock",
+        "traitName": "Micro-Drone Dock",
+        "tier": "rare",
+        "value": 20,
+        "weightedValue": 22,
+        "file": "6-head_items/micro_drone_dock.png"
+      },
+      {
+        "layerId": "head_items",
+        "layerName": "Head Items",
+        "traitId": "mohawk_cables",
+        "traitName": "Mohawk Cables",
+        "tier": "uncommon",
+        "value": 10,
+        "weightedValue": 11,
+        "file": "6-head_items/mohawk_cables.png"
+      },
+      {
+        "layerId": "head_items",
+        "layerName": "Head Items",
+        "traitId": "neuro_link_cable",
+        "traitName": "Neuro-Link Cable",
+        "tier": "rare",
+        "value": 20,
+        "weightedValue": 22,
+        "file": "6-head_items/neuro_link_cable.png"
+      },
+      {
+        "layerId": "head_items",
+        "layerName": "Head Items",
+        "traitId": "radar_fin",
+        "traitName": "Radar Fin",
+        "tier": "uncommon",
+        "value": 10,
+        "weightedValue": 11,
+        "file": "6-head_items/radar_fin.png"
+      },
+      {
+        "layerId": "head_items",
+        "layerName": "Head Items",
+        "traitId": "satellite_dish",
+        "traitName": "Satellite Dish",
+        "tier": "legendary",
+        "value": 50,
+        "weightedValue": 55,
+        "file": "6-head_items/satellite_dish.png"
+      },
+      {
+        "layerId": "head_items",
+        "layerName": "Head Items",
+        "traitId": "security_camera",
+        "traitName": "Security Camera",
+        "tier": "uncommon",
+        "value": 10,
+        "weightedValue": 11,
+        "file": "6-head_items/security_camera.png"
+      },
+      {
+        "layerId": "head_items",
+        "layerName": "Head Items",
+        "traitId": "signal_jammer",
+        "traitName": "Signal Jammer",
+        "tier": "rare",
+        "value": 20,
+        "weightedValue": 22,
+        "file": "6-head_items/signal_jammer.png"
+      },
+      {
+        "layerId": "head_items",
+        "layerName": "Head Items",
+        "traitId": "tesla_coil",
+        "traitName": "Tesla Coil",
+        "tier": "mythic",
+        "value": 100,
+        "weightedValue": 110,
+        "file": "6-head_items/tesla_coil.png"
+      },
+      {
+        "layerId": "head_items",
+        "layerName": "Head Items",
+        "traitId": "twin_antennas",
+        "traitName": "Twin Antennas",
+        "tier": "uncommon",
+        "value": 10,
+        "weightedValue": 11,
+        "file": "6-head_items/twin_antennas.png"
+      },
+      {
+        "layerId": "head_items",
+        "layerName": "Head Items",
+        "traitId": "warning_strobe",
+        "traitName": "Warning Strobe",
+        "tier": "common",
+        "value": 5,
+        "weightedValue": 5.5,
+        "file": "6-head_items/warning_strobe.png"
+      },
+      {
+        "layerId": "head_items",
+        "layerName": "Head Items",
+        "traitId": "wi_fi_halo",
+        "traitName": "Wi-Fi Halo",
+        "tier": "uncommon",
+        "value": 10,
+        "weightedValue": 11,
+        "file": "6-head_items/wi_fi_halo.png"
+      }
+    ],
+    "synergyRows": [
+      {
+        "id": "og_brand_set",
+        "name": "OG Brand Set",
+        "multiplierBps": 20000,
+        "requires": [
+          {
+            "layer": "body",
+            "anyOf": [
+              "og_with_lights"
+            ]
+          },
+          {
+            "layer": "mouth",
+            "anyOf": [
+              "og"
+            ]
+          },
+          {
+            "layer": "eyes",
+            "anyOf": [
+              "og"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "stealth_patrol",
+        "name": "Stealth Patrol",
+        "multiplierBps": 17000,
+        "requires": [
+          {
+            "layer": "body",
+            "anyOf": [
+              "stealth_camo"
+            ]
+          },
+          {
+            "layer": "back",
+            "anyOf": [
+              "spy_camera"
+            ]
+          },
+          {
+            "layer": "eyes",
+            "anyOf": [
+              "x_ray"
+            ]
+          },
+          {
+            "layer": "head_items",
+            "anyOf": [
+              "signal_jammer"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "combat_loadout",
+        "name": "Combat Loadout",
+        "multiplierBps": 16000,
+        "requires": [
+          {
+            "layer": "back",
+            "anyOf": [
+              "cyber_katana",
+              "plasma_rifle"
+            ]
+          },
+          {
+            "layer": "body",
+            "anyOf": [
+              "battle_damaged",
+              "void_armor"
+            ]
+          },
+          {
+            "layer": "eyes",
+            "anyOf": [
+              "targeting_reticle"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "network_node",
+        "name": "Network Node",
+        "multiplierBps": 16000,
+        "requires": [
+          {
+            "layer": "background",
+            "anyOf": [
+              "server_room"
+            ]
+          },
+          {
+            "layer": "back",
+            "anyOf": [
+              "matrix_jack"
+            ]
+          },
+          {
+            "layer": "mouth",
+            "anyOf": [
+              "data_port"
+            ]
+          },
+          {
+            "layer": "eyes",
+            "anyOf": [
+              "binary_stream"
+            ]
+          },
+          {
+            "layer": "eyewear",
+            "anyOf": [
+              "holographic_hud"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "space_explorer",
+        "name": "Space Explorer",
+        "multiplierBps": 16000,
+        "requires": [
+          {
+            "layer": "background",
+            "anyOf": [
+              "space_station"
+            ]
+          },
+          {
+            "layer": "back",
+            "anyOf": [
+              "jetpack",
+              "oxygen_tanks",
+              "satellite_probe"
+            ]
+          },
+          {
+            "layer": "body",
+            "anyOf": [
+              "space_explorer"
+            ]
+          },
+          {
+            "layer": "head_items",
+            "anyOf": [
+              "satellite_dish",
+              "twin_antennas"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "energy_core",
+        "name": "Energy Core",
+        "multiplierBps": 15000,
+        "requires": [
+          {
+            "layer": "back",
+            "anyOf": [
+              "battery_pack",
+              "shield_generator",
+              "gravity_orb"
+            ]
+          },
+          {
+            "layer": "mouth",
+            "anyOf": [
+              "energy_core_vent"
+            ]
+          },
+          {
+            "layer": "eyewear",
+            "anyOf": [
+              "energy_crown"
+            ]
+          },
+          {
+            "layer": "head_items",
+            "anyOf": [
+              "tesla_coil"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "surveillance_grid",
+        "name": "Surveillance Grid",
+        "multiplierBps": 14000,
+        "requires": [
+          {
+            "layer": "back",
+            "anyOf": [
+              "spy_camera"
+            ]
+          },
+          {
+            "layer": "eyes",
+            "anyOf": [
+              "radar_sweep"
+            ]
+          },
+          {
+            "layer": "head_items",
+            "anyOf": [
+              "security_camera"
+            ]
+          },
+          {
+            "layer": "eyewear",
+            "anyOf": [
+              "scouter"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "royal_sentinel",
+        "name": "Royal Sentinel",
+        "multiplierBps": 14000,
+        "requires": [
+          {
+            "layer": "body",
+            "anyOf": [
+              "royal_gold"
+            ]
+          },
+          {
+            "layer": "eyewear",
+            "anyOf": [
+              "energy_crown"
+            ]
+          },
+          {
+            "layer": "head_items",
+            "anyOf": [
+              "armor_plating",
+              "horn_vents"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "wired_mind",
+        "name": "Wired Mind",
+        "multiplierBps": 13000,
+        "requires": [
+          {
+            "layer": "mouth",
+            "anyOf": [
+              "bio_mechanical"
+            ]
+          },
+          {
+            "layer": "eyes",
+            "anyOf": [
+              "neural_link"
+            ]
+          },
+          {
+            "layer": "head_items",
+            "anyOf": [
+              "neuro_link_cable"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "glitch_anomaly",
+        "name": "Glitch Anomaly",
+        "multiplierBps": 13000,
+        "requires": [
+          {
+            "layer": "background",
+            "anyOf": [
+              "system_error",
+              "glitch_dimension"
+            ]
+          },
+          {
+            "layer": "eyes",
+            "anyOf": [
+              "dead_pixel",
+              "glitch_blink"
+            ]
+          },
+          {
+            "layer": "eyewear",
+            "anyOf": [
+              "shattered_shield"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "matrix_operator",
+        "name": "Matrix Operator",
+        "multiplierBps": 13000,
+        "requires": [
+          {
+            "layer": "body",
+            "anyOf": [
+              "matrix_rain"
+            ]
+          },
+          {
+            "layer": "back",
+            "anyOf": [
+              "matrix_jack"
+            ]
+          },
+          {
+            "layer": "eyes",
+            "anyOf": [
+              "binary_stream"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "cooling_stack",
+        "name": "Cooling Stack",
+        "multiplierBps": 12000,
+        "requires": [
+          {
+            "layer": "back",
+            "anyOf": [
+              "cooling_radiator"
+            ]
+          },
+          {
+            "layer": "mouth",
+            "anyOf": [
+              "heatsink_grille",
+              "ventilation_fan"
+            ]
+          },
+          {
+            "layer": "head_items",
+            "anyOf": [
+              "cooling_tubes"
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

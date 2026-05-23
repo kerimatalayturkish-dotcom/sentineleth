@@ -7,9 +7,10 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-pixel), monospace;
-  --font-mono: var(--font-pixel), monospace;
-  --font-heading: var(--font-pixel), monospace;
+  --font-sans: var(--font-rajdhani), sans-serif;
+  --font-mono: var(--font-space-mono), monospace;
+  --font-heading: var(--font-rajdhani), sans-serif;
+  --font-cyber: var(--font-rajdhani), sans-serif;
   --color-sentinel: var(--sentinel);
   --color-sentinel-glow: var(--sentinel-glow);
   --color-sentinel-dim: var(--sentinel-dim);
@@ -52,47 +53,108 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
+@utility font-pixel {
+  font-family: var(--font-rajdhani), monospace;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  font-weight: 400;
+}
+
+@utility font-cyber {
+  font-family: var(--font-rajdhani), monospace;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  font-weight: 400;
+}
+
 /* Sentinel Cyberpunk Theme — dark only */
 :root {
-  --background: #0a0a14;
-  --foreground: #e0dfe6;
-  --card: #111122;
-  --card-foreground: #e0dfe6;
-  --popover: #111122;
-  --popover-foreground: #e0dfe6;
-  --primary: #ff2d2d;
-  --primary-foreground: #0a0a14;
-  --secondary: #1a1a2e;
-  --secondary-foreground: #e0dfe6;
-  --muted: #16162a;
+  /* Core Backgrounds: Deep abyss black */
+  --background: #030305;
+  --foreground: #e0e0e0;
+  
+  /* Cards & Glass Panels */
+  --card: rgba(10, 10, 15, 0.6);
+  --card-foreground: #e0e0e0;
+  --popover: rgba(10, 10, 15, 0.8);
+  --popover-foreground: #e0e0e0;
+  
+  /* Primary Agent Color: Neon Electric Green */
+  --primary: #00ff9d;
+  --primary-foreground: #000000;
+  --secondary: rgba(0, 255, 157, 0.1);
+  --secondary-foreground: #00ff9d;
+  
+  /* Muted & Accents */
+  --muted: rgba(255, 255, 255, 0.05);
   --muted-foreground: #6b6b8a;
-  --accent: #1e1e3a;
-  --accent-foreground: #e0dfe6;
-  --destructive: #ff4444;
-  --border: rgba(255, 45, 45, 0.15);
-  --input: rgba(255, 45, 45, 0.12);
-  --ring: #ff2d2d;
-  --chart-1: #ff2d2d;
-  --chart-2: #00ff66;
-  --chart-3: #ff6b35;
-  --chart-4: #6b35ff;
-  --chart-5: #35c9ff;
+  --accent: rgba(0, 255, 157, 0.15);
+  --accent-foreground: #00ff9d;
+  
+  /* Destructive & Status */
+  --destructive: #ff2d2d;
+  --status-live: #00ff9d;
+  
+  /* Borders and Inputs */
+  --border: rgba(0, 255, 157, 0.15);
+  --input: rgba(0, 255, 157, 0.12);
+  --ring: #00ff9d;
+  
+  /* Charts */
+  --chart-1: #00ff9d;
+  --chart-2: #35c9ff;
+  --chart-3: #6b35ff;
+  --chart-4: #ff2d2d;
+  --chart-5: #ff6b35;
+  
   --radius: 0.625rem;
-  --sentinel: #ff2d2d;
-  --sentinel-glow: rgba(255, 45, 45, 0.4);
-  --sentinel-dim: rgba(255, 45, 45, 0.08);
-  --status-live: #00ff66;
-  --font-heading: var(--font-pixel), monospace;
-  --font-sans: var(--font-pixel), monospace;
-  --font-mono: var(--font-pixel), monospace;
-  --sidebar: #0e0e1a;
-  --sidebar-foreground: #e0dfe6;
-  --sidebar-primary: #ff2d2d;
-  --sidebar-primary-foreground: #0a0a14;
-  --sidebar-accent: #1a1a2e;
-  --sidebar-accent-foreground: #e0dfe6;
-  --sidebar-border: rgba(255, 45, 45, 0.15);
-  --sidebar-ring: #ff2d2d;
+  
+  /* Sentinel Custom Branding */
+  --sentinel: #00ff9d;
+  --sentinel-glow: rgba(0, 255, 157, 0.5);
+  --sentinel-dim: rgba(0, 255, 157, 0.08);
+  
+  /* Typography */
+  --font-heading: var(--font-rajdhani), monospace;
+  --font-sans: var(--font-rajdhani), monospace;
+  --font-mono: var(--font-space-mono), monospace;
+  
+  /* Sidebar */
+  --sidebar: rgba(10, 10, 15, 0.8);
+  --sidebar-foreground: #e0e0e0;
+  --sidebar-primary: #00ff9d;
+  --sidebar-primary-foreground: #000000;
+  --sidebar-accent: rgba(0, 255, 157, 0.1);
+  --sidebar-accent-foreground: #00ff9d;
+  --sidebar-border: rgba(0, 255, 157, 0.15);
+  --sidebar-ring: #00ff9d;
+}
+
+/* Base global application styles */
+@layer base {
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    @apply antialiased;
+  }
+}
+
+/* Cyberpunk Reusable Utilities */
+@layer components {
+  /* Standard Glass Panel */
+  .glass-panel {
+    @apply bg-card backdrop-blur-md border border-sentinel/20 shadow-lg;
+  }
+  
+  /* Interactive Glass Panel with Hover Glow */
+  .glass-panel-interactive {
+    @apply bg-card backdrop-blur-md border border-sentinel/20 shadow-lg transition-all duration-300 ease-out hover:border-sentinel/50 hover:shadow-[0_0_15px_rgba(0,255,157,0.15)] hover:-translate-y-[1px];
+  }
+
+  /* Cyberpunk Buttons */
+  .btn-cyber {
+    @apply relative overflow-hidden bg-sentinel/10 border border-sentinel text-sentinel font-cyber text-sm tracking-widest uppercase transition-all duration-300 ease-out hover:bg-sentinel hover:text-black hover:shadow-[0_0_20px_rgba(0,255,157,0.4)];
+  }
 }
 
 /* Remove light theme — sentinel is always dark */
@@ -175,10 +237,10 @@
   background: conic-gradient(
     from 0deg,
     transparent 0deg,
-    transparent 270deg,
-    #ff2d2d 320deg,
-    #ff8a8a 350deg,
-    #ff2d2d 360deg
+     transparent 270deg,
+    #00ff9d 320deg,
+    #8affd1 350deg,
+    #00ff9d 360deg
   );
   animation: border-trace-spin 3s linear infinite;
 }
@@ -187,7 +249,7 @@
   position: absolute;
   inset: 2px;
   z-index: -1;
-  background: #000;
+  background: #030305;
   border-radius: calc(0.5rem - 2px);
 }
 .border-trace:hover::before {
@@ -196,28 +258,30 @@
 
 /* Card sentinel border glow on hover */
 .sentinel-card {
-  transition: box-shadow 0.3s ease, border-color 0.3s ease;
+  transition: box-shadow 0.3s ease, border-color 0.3s ease, transform 0.3s ease;
+  backdrop-filter: blur(12px);
+  background-color: var(--card);
 }
 .sentinel-card:hover {
-  box-shadow: 0 0 12px var(--sentinel-dim), 0 0 32px rgba(255, 45, 45, 0.06);
-  border-color: rgba(255, 45, 45, 0.3);
+  box-shadow: 0 0 12px var(--sentinel-dim), 0 0 32px rgba(0, 255, 157, 0.1);
+  border-color: rgba(0, 255, 157, 0.4);
+  transform: translateY(-2px);
 }
 
-/* Pixel heading style */
-.font-pixel {
-  font-family: var(--font-pixel), monospace;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-}
+/* Pixel heading style removed since it is now a standard utility */
 
 /* RainbowKit overrides to match sentinel theme */
 [data-rk] [aria-label="Close"] {
-  color: #ff2d2d !important;
+  color: #00ff9d !important;
 }
 [data-rk] button {
-  font-family: var(--font-pixel), monospace !important;
+  font-family: var(--font-rajdhani), sans-serif !important;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600 !important;
 }
 [data-rk] div[role="dialog"] {
-  background: #0e0e1c !important;
-  border: 1px solid rgba(255, 45, 45, 0.15) !important;
+  background: rgba(10, 10, 15, 0.95) !important;
+  backdrop-filter: blur(10px) !important;
+  border: 1px solid rgba(0, 255, 157, 0.2) !important;
 }

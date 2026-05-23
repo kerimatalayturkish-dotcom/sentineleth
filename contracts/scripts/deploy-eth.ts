@@ -8,8 +8,8 @@ async function main() {
     throw new Error("NFT_TREASURY_WALLET missing/invalid in .env.local")
   }
 
-  // Optional: a hot watcher EOA to receive URI_SETTER_ROLE post-deploy.
-  // If WATCHER_ADDRESS is omitted, no role is granted (the deployer keeps it).
+  // Optional: a hot watcher EOA to receive minter authority for URI backfills.
+  // If WATCHER_ADDRESS is omitted, the deployer is the initial minter.
   const watcherEnv = process.env.WATCHER_ADDRESS
   const watcher = (watcherEnv && /^0x[0-9a-fA-F]{40}$/.test(watcherEnv)) ? watcherEnv : null
 
@@ -19,24 +19,18 @@ async function main() {
   console.log(`  network    : ${network.name} (chainId ${network.chainId})`)
   console.log(`  deployer   : ${deployer.address}`)
   console.log(`  treasury   : ${treasury}`)
-  console.log(`  watcher    : ${watcher ?? "(none — grant URI_SETTER_ROLE manually after deploy)"}`)
+  console.log(`  minter     : ${watcher ?? deployer.address}`)
 
   const Sentinel = await ethers.getContractFactory("SentinelETH")
-  const c = await Sentinel.deploy(treasury)
+  const c = await Sentinel.deploy(treasury, watcher ?? deployer.address)
   console.log(`  tx         : ${c.deploymentTransaction()?.hash}`)
   await c.waitForDeployment()
   const addr = await c.getAddress()
   console.log(`\n✅ Deployed at: ${addr}`)
 
-  // Deployer holds DEFAULT_ADMIN_ROLE + PAUSER_ROLE + URI_SETTER_ROLE by default.
-  if (watcher) {
-    const URI_SETTER_ROLE = ethers.id("URI_SETTER_ROLE")
-    console.log(`\nGranting URI_SETTER_ROLE to watcher ${watcher}…`)
-    const tx = await c.grantRole(URI_SETTER_ROLE, watcher)
-    console.log(`  tx         : ${tx.hash}`)
-    await tx.wait()
-    console.log(`✅ URI_SETTER_ROLE granted`)
-  }
+  console.log(`\nOwner/minter:`)
+  console.log(`  owner      : ${await c.owner()}`)
+  console.log(`  minter     : ${await c.minter()}`)
 
   console.log(`\nVerify with:`)
   console.log(`  npx hardhat verify --network ${network.name === "unknown" ? "<network>" : network.name} ${addr} ${treasury}`)
@@ -46,7 +40,7 @@ async function main() {
 
   if (!watcher) {
     console.log(`\nNext step (manual): from the deployer key, run`)
-    console.log(`  c.grantRole(keccak256("URI_SETTER_ROLE"), <watcher hot wallet>)`)
+    console.log(`  c.setMinter(<watcher hot wallet>)`)
   }
 }
 

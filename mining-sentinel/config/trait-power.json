@@ -1,0 +1,300 @@
+{
+  "version": 1,
+  "lastUpdated": "2026-05-15",
+  "collectionCap": 10000,
+  "traitsSource": "../../config/traits.json",
+  "notes": [
+    "Canonical mining Phase 0 trait scoring config.",
+    "Covers every trait in the permanent 112-trait config/traits.json catalog.",
+    "Layer weights use a 1000 scale. Synergy multipliers use a 10000 scale."
+  ],
+  "tierValues": {
+    "none": 0,
+    "common": 5,
+    "uncommon": 10,
+    "rare": 20,
+    "legendary": 50,
+    "mythic": 100
+  },
+  "layerWeightsBps": {
+    "background": 800,
+    "back": 1000,
+    "body": 2000,
+    "mouth": 400,
+    "eyes": 1500,
+    "eyewear": 1200,
+    "head_items": 1100
+  },
+  "synergyMultiplierScale": 10000,
+  "maxSynergyMultiplierBps": 40000,
+  "layers": {
+    "background": {
+      "traits": {
+        "assembly_line": "common",
+        "circuit_sky": "common",
+        "code_waterfall": "uncommon",
+        "cyber_graveyard": "uncommon",
+        "data_stream": "uncommon",
+        "digital_forest": "uncommon",
+        "glitch_dimension": "legendary",
+        "neon_alleyway": "rare",
+        "server_room": "uncommon",
+        "space_station": "rare",
+        "system_error": "rare",
+        "the_construct": "legendary",
+        "the_core": "mythic",
+        "the_grid": "rare",
+        "underground_bunker": "uncommon",
+        "0d190b": "common",
+        "123d08": "common",
+        "313540": "common",
+        "421d03": "common"
+      }
+    },
+    "back": {
+      "traits": {
+        "battery_pack": "common",
+        "cape_of_wires": "common",
+        "cooling_radiator": "common",
+        "cyber_katana": "legendary",
+        "gravity_orb": "rare",
+        "hack_pack": "uncommon",
+        "jetpack": "legendary",
+        "matrix_jack": "rare",
+        "oxygen_tanks": "common",
+        "plasma_rifle": "mythic",
+        "satellite_probe": "uncommon",
+        "shield_generator": "rare",
+        "solar_wings": "rare",
+        "spider_arms": "uncommon",
+        "spy_camera": "uncommon"
+      }
+    },
+    "body": {
+      "traits": {
+        "battle_damaged": "common",
+        "carbon_fiber": "common",
+        "chrome_plated": "rare",
+        "circuit_board": "rare",
+        "deep_sea": "rare",
+        "industrial_hazard": "common",
+        "led_grid": "rare",
+        "matrix_rain": "rare",
+        "nano_suit": "legendary",
+        "og_with_lights": "legendary",
+        "prototype": "legendary",
+        "royal_gold": "mythic",
+        "rusty_scraps": "common",
+        "space_explorer": "legendary",
+        "stealth_camo": "rare",
+        "void_armor": "mythic"
+      }
+    },
+    "mouth": {
+      "traits": {
+        "binary_stitches": "common",
+        "bio_mechanical": "rare",
+        "data_port": "uncommon",
+        "energy_core_vent": "legendary",
+        "exhaust_pipe": "common",
+        "exposed_hydraulics": "uncommon",
+        "hazard_tape": "common",
+        "heatsink_grille": "uncommon",
+        "liquid_metal": "rare",
+        "og": "mythic",
+        "respirator": "uncommon",
+        "sealed_plate": "common",
+        "serial_number": "common",
+        "speaker_mesh": "common",
+        "ventilation_fan": "uncommon",
+        "voice_waveform": "rare"
+      }
+    },
+    "eyes": {
+      "traits": {
+        "binary_stream": "uncommon",
+        "cyclops_beam": "legendary",
+        "dead_pixel": "common",
+        "diamond_core": "mythic",
+        "glitch_blink": "uncommon",
+        "heartbeat_monitor": "common",
+        "heatmap": "uncommon",
+        "hexgrid_honeycomb": "uncommon",
+        "hollow_sockets": "common",
+        "loading_ring": "common",
+        "neural_link": "rare",
+        "og": "legendary",
+        "radar_sweep": "rare",
+        "targeting_reticle": "rare",
+        "triple_threat": "mythic",
+        "x_ray": "rare"
+      }
+    },
+    "eyewear": {
+      "traits": {
+        "ar_glasses": "rare",
+        "blindfold_overlay": "common",
+        "carbon_fiber_band": "common",
+        "data_visor": "uncommon",
+        "energy_crown": "mythic",
+        "holographic_hud": "rare",
+        "magnifying_lens": "common",
+        "night_vision": "rare",
+        "scanning_laser": "uncommon",
+        "scouter": "rare",
+        "shattered_shield": "common",
+        "solar_shield": "uncommon",
+        "tactical_monocle": "uncommon",
+        "vr_goggles": "uncommon",
+        "welding_mask": "common"
+      }
+    },
+    "head_items": {
+      "traits": {
+        "armor_plating": "common",
+        "brain_case": "legendary",
+        "cooling_tubes": "common",
+        "horn_vents": "common",
+        "micro_drone_dock": "rare",
+        "mohawk_cables": "uncommon",
+        "neuro_link_cable": "rare",
+        "radar_fin": "uncommon",
+        "satellite_dish": "legendary",
+        "security_camera": "uncommon",
+        "signal_jammer": "rare",
+        "tesla_coil": "mythic",
+        "twin_antennas": "uncommon",
+        "warning_strobe": "common",
+        "wi_fi_halo": "uncommon"
+      }
+    }
+  },
+  "synergies": [
+    {
+      "id": "og_brand_set",
+      "name": "OG Brand Set",
+      "multiplierBps": 20000,
+      "requires": [
+        { "layer": "body", "anyOf": ["og_with_lights"] },
+        { "layer": "mouth", "anyOf": ["og"] },
+        { "layer": "eyes", "anyOf": ["og"] }
+      ]
+    },
+    {
+      "id": "stealth_patrol",
+      "name": "Stealth Patrol",
+      "multiplierBps": 17000,
+      "requires": [
+        { "layer": "body", "anyOf": ["stealth_camo"] },
+        { "layer": "back", "anyOf": ["spy_camera"] },
+        { "layer": "eyes", "anyOf": ["x_ray"] },
+        { "layer": "head_items", "anyOf": ["signal_jammer"] }
+      ]
+    },
+    {
+      "id": "combat_loadout",
+      "name": "Combat Loadout",
+      "multiplierBps": 16000,
+      "requires": [
+        { "layer": "back", "anyOf": ["cyber_katana", "plasma_rifle"] },
+        { "layer": "body", "anyOf": ["battle_damaged", "void_armor"] },
+        { "layer": "eyes", "anyOf": ["targeting_reticle"] }
+      ]
+    },
+    {
+      "id": "network_node",
+      "name": "Network Node",
+      "multiplierBps": 16000,
+      "requires": [
+        { "layer": "background", "anyOf": ["server_room"] },
+        { "layer": "back", "anyOf": ["matrix_jack"] },
+        { "layer": "mouth", "anyOf": ["data_port"] },
+        { "layer": "eyes", "anyOf": ["binary_stream"] },
+        { "layer": "eyewear", "anyOf": ["holographic_hud"] }
+      ]
+    },
+    {
+      "id": "space_explorer",
+      "name": "Space Explorer",
+      "multiplierBps": 16000,
+      "requires": [
+        { "layer": "background", "anyOf": ["space_station"] },
+        { "layer": "back", "anyOf": ["jetpack", "oxygen_tanks", "satellite_probe"] },
+        { "layer": "body", "anyOf": ["space_explorer"] },
+        { "layer": "head_items", "anyOf": ["satellite_dish", "twin_antennas"] }
+      ]
+    },
+    {
+      "id": "energy_core",
+      "name": "Energy Core",
+      "multiplierBps": 15000,
+      "requires": [
+        { "layer": "back", "anyOf": ["battery_pack", "shield_generator", "gravity_orb"] },
+        { "layer": "mouth", "anyOf": ["energy_core_vent"] },
+        { "layer": "eyewear", "anyOf": ["energy_crown"] },
+        { "layer": "head_items", "anyOf": ["tesla_coil"] }
+      ]
+    },
+    {
+      "id": "surveillance_grid",
+      "name": "Surveillance Grid",
+      "multiplierBps": 14000,
+      "requires": [
+        { "layer": "back", "anyOf": ["spy_camera"] },
+        { "layer": "eyes", "anyOf": ["radar_sweep"] },
+        { "layer": "head_items", "anyOf": ["security_camera"] },
+        { "layer": "eyewear", "anyOf": ["scouter"] }
+      ]
+    },
+    {
+      "id": "royal_sentinel",
+      "name": "Royal Sentinel",
+      "multiplierBps": 14000,
+      "requires": [
+        { "layer": "body", "anyOf": ["royal_gold"] },
+        { "layer": "eyewear", "anyOf": ["energy_crown"] },
+        { "layer": "head_items", "anyOf": ["armor_plating", "horn_vents"] }
+      ]
+    },
+    {
+      "id": "wired_mind",
+      "name": "Wired Mind",
+      "multiplierBps": 13000,
+      "requires": [
+        { "layer": "mouth", "anyOf": ["bio_mechanical"] },
+        { "layer": "eyes", "anyOf": ["neural_link"] },
+        { "layer": "head_items", "anyOf": ["neuro_link_cable"] }
+      ]
+    },
+    {
+      "id": "glitch_anomaly",
+      "name": "Glitch Anomaly",
+      "multiplierBps": 13000,
+      "requires": [
+        { "layer": "background", "anyOf": ["system_error", "glitch_dimension"] },
+        { "layer": "eyes", "anyOf": ["dead_pixel", "glitch_blink"] },
+        { "layer": "eyewear", "anyOf": ["shattered_shield"] }
+      ]
+    },
+    {
+      "id": "matrix_operator",
+      "name": "Matrix Operator",
+      "multiplierBps": 13000,
+      "requires": [
+        { "layer": "body", "anyOf": ["matrix_rain"] },
+        { "layer": "back", "anyOf": ["matrix_jack"] },
+        { "layer": "eyes", "anyOf": ["binary_stream"] }
+      ]
+    },
+    {
+      "id": "cooling_stack",
+      "name": "Cooling Stack",
+      "multiplierBps": 12000,
+      "requires": [
+        { "layer": "back", "anyOf": ["cooling_radiator"] },
+        { "layer": "mouth", "anyOf": ["heatsink_grille", "ventilation_fan"] },
+        { "layer": "head_items", "anyOf": ["cooling_tubes"] }
+      ]
+    }
+  ]
+}

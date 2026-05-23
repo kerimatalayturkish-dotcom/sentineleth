@@ -110,12 +110,25 @@ function renderMarkdown(md: string): { nodes: React.ReactNode[]; toc: TocEntry[]
           : level === 2
           ? "font-pixel text-sentinel text-[11px] sm:text-xs mt-10 mb-3 tracking-wider scroll-mt-20"
           : "font-pixel text-foreground text-[10px] mt-6 mb-2 tracking-wider"
-      const Tag = (level === 1 ? "h1" : level === 2 ? "h2" : "h3") as keyof React.JSX.IntrinsicElements
-      out.push(
-        <Tag key={key++} id={id} className={className}>
-          {title}
-        </Tag>,
-      )
+      if (level === 1) {
+        out.push(
+          <h1 key={key++} id={id} className={className}>
+            {title}
+          </h1>,
+        )
+      } else if (level === 2) {
+        out.push(
+          <h2 key={key++} id={id} className={className}>
+            {title}
+          </h2>,
+        )
+      } else {
+        out.push(
+          <h3 key={key++} id={id} className={className}>
+            {title}
+          </h3>,
+        )
+      }
       i++
       continue
     }

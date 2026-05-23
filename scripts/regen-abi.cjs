@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 // Regenerate lib/contract.ts SENTINEL_ABI from the Hardhat artifact in NFTagent.
 // Usage: node scripts/regen-abi.cjs
 const fs = require("fs");

@@ -9,10 +9,6 @@ const MAX_PER_WALLET = 4n
 const PUBLIC_CAP = 8_293n
 const AIRDROP_CAP = 1_707n
 
-const PAUSER_ROLE     = ethers.id("PAUSER_ROLE")
-const URI_SETTER_ROLE = ethers.id("URI_SETTER_ROLE")
-const DEFAULT_ADMIN_ROLE = ethers.ZeroHash
-
 function uri(n: number): string {
   return `https://gateway.irys.xyz/test-tx-${n}`
 }
@@ -23,10 +19,8 @@ function uris(n: number, start = 0): string[] {
 async function deployFixture() {
   const [owner, watcher, treasury, alice, bob, carol, dave] = await ethers.getSigners()
   const Sentinel = await ethers.getContractFactory("SentinelETH")
-  const c = await Sentinel.deploy(treasury.address)
+  const c = await Sentinel.deploy(treasury.address, watcher.address)
   await c.waitForDeployment()
-  // Owner grants the watcher hot key URI_SETTER_ROLE (the post-deploy step).
-  await c.connect(owner).grantRole(URI_SETTER_ROLE, watcher.address)
   return { c, owner, watcher, treasury, alice, bob, carol, dave }
 }
 
@@ -36,7 +30,7 @@ function buildAirdropTree(entries: Array<[string, number]>) {
 }
 function proofFor(tree: ReturnType<typeof buildAirdropTree>, addr: string, id: number): string[] {
   for (const [i, v] of tree.entries()) {
-    if (v[0].toLowerCase() === addr.toLowerCase() && BigInt(v[1] as number) === BigInt(id)) {
+    if (String(v[0]).toLowerCase() === addr.toLowerCase() && BigInt(v[1]) === BigInt(id)) {
       return tree.getProof(i)
     }
   }
@@ -52,11 +46,10 @@ describe("SentinelETH", function () {
       expect(await c.treasury()).to.equal(treasury.address)
     })
 
-    it("grants all roles to deployer", async function () {
-      const { c, owner } = await deployFixture()
-      expect(await c.hasRole(DEFAULT_ADMIN_ROLE, owner.address)).to.equal(true)
-      expect(await c.hasRole(PAUSER_ROLE,        owner.address)).to.equal(true)
-      expect(await c.hasRole(URI_SETTER_ROLE,    owner.address)).to.equal(true)
+    it("sets owner and initial minter", async function () {
+      const { c, owner, watcher } = await deployFixture()
+      expect(await c.owner()).to.equal(owner.address)
+      expect(await c.minter()).to.equal(watcher.address)
     })
 
     it("exposes correct constants", async function () {
@@ -70,7 +63,15 @@ describe("SentinelETH", function () {
 
     it("rejects zero treasury", async function () {
       const Sentinel = await ethers.getContractFactory("SentinelETH")
-      await expect(Sentinel.deploy(ethers.ZeroAddress))
+      const [, watcher] = await ethers.getSigners()
+      await expect(Sentinel.deploy(ethers.ZeroAddress, watcher.address))
+        .to.be.revertedWithCustomError(Sentinel, "ZeroAddress")
+    })
+
+    it("rejects zero minter", async function () {
+      const Sentinel = await ethers.getContractFactory("SentinelETH")
+      const [, , treasury] = await ethers.getSigners()
+      await expect(Sentinel.deploy(treasury.address, ethers.ZeroAddress))
         .to.be.revertedWithCustomError(Sentinel, "ZeroAddress")
     })
 
@@ -137,7 +138,7 @@ describe("SentinelETH", function () {
   })
 
   describe("setTokenURIs", function () {
-    it("happy path: URI_SETTER_ROLE backfills URIs after publicMint", async function () {
+    it("happy path: minter backfills URIs after publicMint", async function () {
       const { c, watcher, alice } = await deployFixture()
       await c.connect(alice).publicMint(3, { value: MINT_PRICE * 3n })
       const list = uris(3)
@@ -148,11 +149,11 @@ describe("SentinelETH", function () {
       expect(await c.tokenURI(3)).to.equal(list[2])
     })
 
-    it("rejects callers without URI_SETTER_ROLE", async function () {
+    it("rejects callers that are not the minter", async function () {
       const { c, alice } = await deployFixture()
       await c.connect(alice).publicMint(1, { value: MINT_PRICE })
       await expect(c.connect(alice).setTokenURIs(1, uris(1)))
-        .to.be.revertedWithCustomError(c, "AccessControlUnauthorizedAccount")
+        .to.be.revertedWithCustomError(c, "NotMinter")
     })
 
     it("rejects empty / oversized batches", async function () {
@@ -189,55 +190,11 @@ describe("SentinelETH", function () {
     })
   })
 
-  describe("burn (token holder)", function () {
-    it("token owner can burn their token", async function () {
-      const { c, alice } = await deployFixture()
-      await c.connect(alice).publicMint(1, { value: MINT_PRICE })
-      await c.connect(alice).burn(1)
-      expect(await c.balanceOf(alice.address)).to.equal(0n)
-    })
-
-    it("non-owner cannot burn", async function () {
-      const { c, alice, bob } = await deployFixture()
-      await c.connect(alice).publicMint(1, { value: MINT_PRICE })
-      await expect(c.connect(bob).burn(1))
-        .to.be.revertedWithCustomError(c, "TransferCallerNotOwnerNorApproved")
-    })
-
-    it("approved address can burn", async function () {
-      const { c, alice, bob } = await deployFixture()
-      await c.connect(alice).publicMint(1, { value: MINT_PRICE })
-      await c.connect(alice).approve(bob.address, 1)
-      await c.connect(bob).burn(1)
-      expect(await c.balanceOf(alice.address)).to.equal(0n)
-    })
-
-    it("burned token's tokenURI reverts", async function () {
-      const { c, alice } = await deployFixture()
-      await c.connect(alice).publicMint(1, { value: MINT_PRICE })
-      await c.connect(alice).burn(1)
-      await expect(c.tokenURI(1))
-        .to.be.revertedWithCustomError(c, "URIQueryForNonexistentToken")
-    })
-
-    it("burn does NOT reduce publicMinted counter (slot stays consumed)", async function () {
-      const { c, alice } = await deployFixture()
-      await c.connect(alice).publicMint(2, { value: MINT_PRICE * 2n })
-      await c.connect(alice).burn(1)
-      expect(await c.publicMinted()).to.equal(2n)
-      expect(await c.publicMintedBy(alice.address)).to.equal(2n)
-      // alice has now minted 2 against her cap of 4; she can still mint 2 more.
-      await c.connect(alice).publicMint(2, { value: MINT_PRICE * 2n })
-      await expect(c.connect(alice).publicMint(1, { value: MINT_PRICE }))
-        .to.be.revertedWithCustomError(c, "WalletCapExceeded")
-    })
-  })
-
   describe("closeMint", function () {
-    it("only DEFAULT_ADMIN_ROLE can call", async function () {
+    it("only owner can call", async function () {
       const { c, alice } = await deployFixture()
       await expect(c.connect(alice).closeMint())
-        .to.be.revertedWithCustomError(c, "AccessControlUnauthorizedAccount")
+        .to.be.revertedWithCustomError(c, "OwnableUnauthorizedAccount")
     })
 
     it("blocks future public mints, leaves existing tokens intact", async function () {
@@ -267,10 +224,10 @@ describe("SentinelETH", function () {
   })
 
   describe("closeAirdrop", function () {
-    it("only DEFAULT_ADMIN_ROLE can call", async function () {
+    it("only owner can call", async function () {
       const { c, alice } = await deployFixture()
       await expect(c.connect(alice).closeAirdrop())
-        .to.be.revertedWithCustomError(c, "AccessControlUnauthorizedAccount")
+        .to.be.revertedWithCustomError(c, "OwnableUnauthorizedAccount")
     })
 
     it("blocks future claims, leaves prior claims intact", async function () {
@@ -397,7 +354,7 @@ describe("SentinelETH", function () {
     })
   })
 
-  describe("Roles & admin controls", function () {
+  describe("Ownership & admin controls", function () {
     it("setTreasury updates and emits (admin only)", async function () {
       const { c, owner, alice } = await deployFixture()
       await expect(c.connect(owner).setTreasury(alice.address))
@@ -411,45 +368,54 @@ describe("SentinelETH", function () {
         .to.be.revertedWithCustomError(c, "ZeroAddress")
     })
 
-    it("non-admin cannot call setTreasury / setAirdropRoot / closeMint / closeAirdrop / emergency", async function () {
+    it("non-owner cannot call setTreasury / setAirdropRoot / closeMint / closeAirdrop / emergency", async function () {
       const { c, alice } = await deployFixture()
       await expect(c.connect(alice).setTreasury(alice.address))
-        .to.be.revertedWithCustomError(c, "AccessControlUnauthorizedAccount")
+        .to.be.revertedWithCustomError(c, "OwnableUnauthorizedAccount")
       await expect(c.connect(alice).setAirdropRoot(ethers.ZeroHash))
-        .to.be.revertedWithCustomError(c, "AccessControlUnauthorizedAccount")
+        .to.be.revertedWithCustomError(c, "OwnableUnauthorizedAccount")
       await expect(c.connect(alice).closeMint())
-        .to.be.revertedWithCustomError(c, "AccessControlUnauthorizedAccount")
+        .to.be.revertedWithCustomError(c, "OwnableUnauthorizedAccount")
       await expect(c.connect(alice).closeAirdrop())
-        .to.be.revertedWithCustomError(c, "AccessControlUnauthorizedAccount")
+        .to.be.revertedWithCustomError(c, "OwnableUnauthorizedAccount")
       await expect(c.connect(alice).emergencyAdminMint(alice.address, 1, uris(1)))
-        .to.be.revertedWithCustomError(c, "AccessControlUnauthorizedAccount")
+        .to.be.revertedWithCustomError(c, "OwnableUnauthorizedAccount")
     })
 
-    it("non-pauser cannot pause/unpause", async function () {
+    it("non-owner cannot pause/unpause", async function () {
       const { c, alice } = await deployFixture()
       await expect(c.connect(alice).pause())
-        .to.be.revertedWithCustomError(c, "AccessControlUnauthorizedAccount")
+        .to.be.revertedWithCustomError(c, "OwnableUnauthorizedAccount")
       await expect(c.connect(alice).unpause())
-        .to.be.revertedWithCustomError(c, "AccessControlUnauthorizedAccount")
+        .to.be.revertedWithCustomError(c, "OwnableUnauthorizedAccount")
     })
 
-    it("admin can grant URI_SETTER_ROLE to a fresh address", async function () {
+    it("owner can rotate minter to a fresh address", async function () {
       const { c, owner, alice } = await deployFixture()
-      await c.connect(owner).grantRole(URI_SETTER_ROLE, alice.address)
-      expect(await c.hasRole(URI_SETTER_ROLE, alice.address)).to.equal(true)
-      // alice can now set URIs
+      await expect(c.connect(owner).setMinter(alice.address))
+        .to.emit(c, "MinterUpdated")
+        .withArgs(alice.address)
+      expect(await c.minter()).to.equal(alice.address)
       const [, , , , bob] = await ethers.getSigners()
       await c.connect(bob).publicMint(1, { value: MINT_PRICE })
       await c.connect(alice).setTokenURIs(1, uris(1))
       expect(await c.tokenURI(1)).to.equal(uri(0))
     })
 
-    it("admin can revoke URI_SETTER_ROLE", async function () {
+    it("owner can rotate minter away from the watcher", async function () {
       const { c, owner, watcher, alice } = await deployFixture()
       await c.connect(alice).publicMint(1, { value: MINT_PRICE })
-      await c.connect(owner).revokeRole(URI_SETTER_ROLE, watcher.address)
+      await c.connect(owner).setMinter(owner.address)
       await expect(c.connect(watcher).setTokenURIs(1, uris(1)))
-        .to.be.revertedWithCustomError(c, "AccessControlUnauthorizedAccount")
+        .to.be.revertedWithCustomError(c, "NotMinter")
+    })
+
+    it("setMinter rejects zero and non-owner callers", async function () {
+      const { c, owner, alice } = await deployFixture()
+      await expect(c.connect(owner).setMinter(ethers.ZeroAddress))
+        .to.be.revertedWithCustomError(c, "ZeroAddress")
+      await expect(c.connect(alice).setMinter(alice.address))
+        .to.be.revertedWithCustomError(c, "OwnableUnauthorizedAccount")
     })
   })
 
@@ -476,10 +442,10 @@ describe("SentinelETH", function () {
   })
 
   describe("emergencyAdminMint", function () {
-    it("only DEFAULT_ADMIN_ROLE", async function () {
+    it("only owner", async function () {
       const { c, alice } = await deployFixture()
       await expect(c.connect(alice).emergencyAdminMint(alice.address, 1, uris(1)))
-        .to.be.revertedWithCustomError(c, "AccessControlUnauthorizedAccount")
+        .to.be.revertedWithCustomError(c, "OwnableUnauthorizedAccount")
     })
 
     it("mints without payment, counts against public cap", async function () {
@@ -516,11 +482,11 @@ describe("SentinelETH", function () {
         .to.be.revertedWithCustomError(c, "NoBalance")
     })
 
-    it("withdraw destination cannot be redirected by non-admin", async function () {
+    it("withdraw destination cannot be redirected by non-owner", async function () {
       const { c, alice, bob } = await deployFixture()
       await c.connect(alice).publicMint(1, { value: MINT_PRICE })
       await expect(c.connect(alice).setTreasury(bob.address))
-        .to.be.revertedWithCustomError(c, "AccessControlUnauthorizedAccount")
+        .to.be.revertedWithCustomError(c, "OwnableUnauthorizedAccount")
     })
   })
 
@@ -558,10 +524,10 @@ describe("SentinelETH", function () {
       await expect(c.tokenURI(999)).to.be.revertedWithCustomError(c, "URIQueryForNonexistentToken")
     })
 
-    it("supportsInterface returns true for ERC721 + AccessControl", async function () {
+    it("supportsInterface returns true for ERC721 and false for AccessControl", async function () {
       const { c } = await deployFixture()
       expect(await c.supportsInterface("0x80ac58cd")).to.equal(true) // ERC721
-      expect(await c.supportsInterface("0x7965db0b")).to.equal(true) // AccessControl
+      expect(await c.supportsInterface("0x7965db0b")).to.equal(false) // AccessControl
     })
   })
 })

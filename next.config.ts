@@ -19,6 +19,10 @@ const isProd = process.env.NODE_ENV === "production";
 const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 const rpcUrl = process.env.NEXT_PUBLIC_ETH_RPC_URL || "";
 const wsUrl = process.env.NEXT_PUBLIC_ETH_WS_URL || "";
+const miningRpcUrl = process.env.NEXT_PUBLIC_MINING_RPC_URL || "";
+const miningWsUrl = process.env.NEXT_PUBLIC_MINING_WS_URL || "";
+const nftSourceRpcUrl = process.env.NEXT_PUBLIC_NFT_SOURCE_RPC_URL || "";
+const nftSourceWsUrl = process.env.NEXT_PUBLIC_NFT_SOURCE_WS_URL || "";
 const devOrigin = process.env.NEXT_PUBLIC_DEV_ORIGIN || "";
 
 function originFromUrl(u: string): string | null {
@@ -33,35 +37,44 @@ function originFromUrl(u: string): string | null {
 
 const rpcHttp = originFromUrl(rpcUrl);
 const rpcWs = originFromUrl(wsUrl);
+const miningRpcHttp = originFromUrl(miningRpcUrl);
+const miningRpcWs = originFromUrl(miningWsUrl);
+const nftSourceRpcHttp = originFromUrl(nftSourceRpcUrl);
+const nftSourceRpcWs = originFromUrl(nftSourceWsUrl);
 
-// connect-src: self + RPC (HTTP+WS) + Irys gateways + Alchemy fallbacks
-const connectSrc = [
+// connect-src: self + configured RPCs (HTTP+WS) + Irys gateways + Alchemy fallbacks
+const connectSrc = Array.from(new Set([
   "'self'",
   rpcHttp,
   rpcWs,
+  miningRpcHttp,
+  miningRpcWs,
+  nftSourceRpcHttp,
+  nftSourceRpcWs,
   "https://*.g.alchemy.com",
   "wss://*.g.alchemy.com",
   "https://ethereum-rpc.publicnode.com",
+  !isProd ? "https://ethereum-sepolia-rpc.publicnode.com" : null,
   "https://gateway.irys.xyz",
-  "https://devnet.irys.xyz",
+  !isProd ? "https://devnet.irys.xyz" : null,
   "https://uploader.irys.xyz",
   "https://*.datasprite-cdn.com",
   // dev-only: allow ngrok tunnels so local mobile/agents can hit the dev server
   !isProd ? "https://*.ngrok-free.app" : null,
   !isProd ? "wss://*.ngrok-free.app" : null,
-].filter(Boolean) as string[];
+].filter(Boolean) as string[]));
 
 const imgSrc = [
   "'self'",
   "data:",
   "blob:",
   "https://gateway.irys.xyz",
-  "https://devnet.irys.xyz",
+  !isProd ? "https://devnet.irys.xyz" : null,
   "https://uploader.irys.xyz",
   "https://*.datasprite-cdn.com",
   "https://arweave.net",
   "https://*.etherscan.io",
-];
+].filter(Boolean) as string[];
 
 const csp = [
   "default-src 'self'",

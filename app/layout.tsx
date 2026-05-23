@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { Press_Start_2P } from "next/font/google";
+import { Share_Tech_Mono, Space_Mono } from "next/font/google";
 import { Providers } from "./providers";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
@@ -17,9 +17,15 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const pixelFont = Press_Start_2P({
-  variable: "--font-pixel",
+const shareTech = Share_Tech_Mono({
+  variable: "--font-rajdhani", // Keeping the variable name the same so globals.css doesn't break
   weight: "400",
+  subsets: ["latin"],
+});
+
+const spaceMono = Space_Mono({
+  variable: "--font-space-mono",
+  weight: ["400", "700"],
   subsets: ["latin"],
 });
 
@@ -36,7 +42,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} ${pixelFont.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${shareTech.variable} ${spaceMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-background text-foreground">
         <Providers>

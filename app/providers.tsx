@@ -7,31 +7,72 @@ import {
   RainbowKitProvider,
   darkTheme,
 } from "@rainbow-me/rainbowkit"
-import { okxWallet, metaMaskWallet, walletConnectWallet } from "@rainbow-me/rainbowkit/wallets"
+import { injectedWallet, okxWallet, metaMaskWallet, walletConnectWallet } from "@rainbow-me/rainbowkit/wallets"
 import "@rainbow-me/rainbowkit/styles.css"
 import { ethChain } from "@/lib/chain"
+import { miningChain, miningPublicConfig } from "@/lib/mining-config"
 import { useState } from "react"
 
-const connectors = connectorsForWallets(
-  [
+const APP_NAME = "SentinelETH"
+const INJECTED_ONLY_PROJECT_ID = "injected-only"
+
+function getWalletConnectProjectId() {
+  const projectId = process.env.NEXT_PUBLIC_WC_PROJECT_ID?.trim()
+  if (!projectId || projectId.toUpperCase() === "PLACEHOLDER") {
+    return null
+  }
+  return projectId
+}
+
+function makeConnectors() {
+  const projectId = getWalletConnectProjectId()
+
+  if (!projectId) {
+    return connectorsForWallets(
+      [
+        {
+          groupName: "Browser Wallet",
+          wallets: [injectedWallet],
+        },
+      ],
+      {
+        appName: APP_NAME,
+        projectId: INJECTED_ONLY_PROJECT_ID,
+      },
+    )
+  }
+
+  return connectorsForWallets(
+    [
+      {
+        groupName: "Recommended",
+        wallets: [okxWallet, metaMaskWallet, walletConnectWallet],
+      },
+    ],
     {
-      groupName: "Recommended",
-      wallets: [okxWallet, metaMaskWallet, walletConnectWallet],
+      appName: APP_NAME,
+      projectId,
     },
-  ],
-  {
-    appName: "SentinelETH",
-    projectId: process.env.NEXT_PUBLIC_WC_PROJECT_ID ?? "PLACEHOLDER",
-  },
-)
+  )
+}
 
 function makeConfig() {
+  const connectors = makeConnectors()
+  const prefersMiningChain = miningPublicConfig.deployment === "testnet"
+  const primaryChain = prefersMiningChain ? miningChain : ethChain
+  const secondaryChain = primaryChain.id === miningChain.id ? ethChain : miningChain
+  const chains = primaryChain.id === secondaryChain.id
+    ? [primaryChain] as const
+    : [primaryChain, secondaryChain] as const
+  const transports = {
+    [ethChain.id]: http(process.env.NEXT_PUBLIC_ETH_RPC_URL),
+    [miningChain.id]: http(process.env.NEXT_PUBLIC_MINING_RPC_URL),
+  }
+
   return createConfig({
     connectors,
-    chains: [ethChain],
-    transports: {
-      [ethChain.id]: http(process.env.NEXT_PUBLIC_ETH_RPC_URL),
-    },
+    chains,
+    transports,
     ssr: true,
     storage: createStorage({
       storage: typeof window !== "undefined" ? window.localStorage : noopStorage,

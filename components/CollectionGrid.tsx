@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react"
 import Link from "next/link"
-import { fetchJson } from "@/lib/fetch-json"
+import { FetchJsonError, fetchJson } from "@/lib/fetch-json"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -24,8 +24,37 @@ interface CollectionResponse {
   totalPages: number
 }
 
-export function CollectionGrid() {
+interface TokenResponse extends NFTItem {
+  description?: string | null
+  tokenURI?: string | null
+}
+
+interface WalletHolding {
+  tokenId: number
+  name: string
+  image: string | null
+  attributes: { trait_type: string; value: string }[]
+}
+
+interface HoldingsResponse {
+  address?: string
+  count?: number
+  holdings?: WalletHolding[]
+  truncated?: boolean
+}
+
+function isTokenSearchQuery(value: string) {
+  return /^#?\d+$/.test(value)
+}
+
+function shortAddress(value: string) {
+  return `${value.slice(0, 6)}...${value.slice(-4)}`
+}
+
+export function CollectionGrid({ searchQuery = "" }: { searchQuery?: string }) {
   const [data, setData] = useState<CollectionResponse | null>(null)
+  const [searchResults, setSearchResults] = useState<NFTItem[] | null>(null)
+  const [searchSummary, setSearchSummary] = useState<string | null>(null)
   const [page, setPage] = useState(1)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -37,6 +66,8 @@ export function CollectionGrid() {
     try {
       const json = await fetchJson<CollectionResponse>(`/api/nft/collection?page=${p}&limit=${limit}`)
       setData(json)
+      setSearchResults(null)
+      setSearchSummary(null)
       setPage(p)
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load")
@@ -45,15 +76,65 @@ export function CollectionGrid() {
     }
   }, [])
 
+  const runSearch = useCallback(async (query: string) => {
+    setLoading(true)
+    setError(null)
+
+    try {
+      if (isTokenSearchQuery(query)) {
+        const tokenId = Number(query.replace(/^#/, ""))
+        const item = await fetchJson<TokenResponse>(`/api/nft/collection/${tokenId}`)
+
+        setSearchResults([item])
+        setSearchSummary(`Showing token #${item.tokenId}`)
+        return
+      }
+
+      const response = await fetchJson<HoldingsResponse>(`/api/nft/my-holdings?address=${query}`)
+      const wallet = response.address ?? query
+      const items = (response.holdings ?? []).map((holding) => ({
+        ...holding,
+        owner: wallet,
+      }))
+
+      setSearchResults(items)
+      setSearchSummary(
+        items.length > 0
+          ? `${items.length} result${items.length === 1 ? "" : "s"} for ${shortAddress(wallet)}${response.truncated ? " (first 100 shown)" : ""}`
+          : `No holdings found for ${shortAddress(wallet)}`,
+      )
+    } catch (err) {
+      if (err instanceof FetchJsonError && err.status === 404 && isTokenSearchQuery(query)) {
+        const tokenId = query.replace(/^#/, "")
+        setSearchResults([])
+        setSearchSummary(`No token found for #${tokenId}`)
+        return
+      }
+
+      setError(err instanceof Error ? err.message : "Search failed")
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
   useEffect(() => {
-    fetchPage(1)
-  }, [fetchPage])
+    const normalized = searchQuery.trim()
+
+    if (!normalized) {
+      void fetchPage(1)
+      return
+    }
+
+    void runSearch(normalized)
+  }, [fetchPage, runSearch, searchQuery])
+
+  const items = searchQuery.trim() ? searchResults : data?.items
 
   if (error) {
     return (
       <div className="text-center py-12">
         <p className="text-destructive mb-4">{error}</p>
-        <Button variant="outline" onClick={() => fetchPage(page)}>
+        <Button variant="outline" onClick={() => (searchQuery.trim() ? runSearch(searchQuery.trim()) : fetchPage(page))}>
           Retry
         </Button>
       </div>
@@ -62,6 +143,12 @@ export function CollectionGrid() {
 
   return (
     <div className="space-y-6">
+      {searchQuery.trim() && !loading && searchSummary && (
+        <div className="rounded-lg border border-sentinel/15 bg-card/60 px-4 py-3">
+          <p className="text-[10px] text-muted-foreground">{searchSummary}</p>
+        </div>
+      )}
+
       {/* Grid */}
       {loading ? (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
@@ -75,9 +162,9 @@ export function CollectionGrid() {
             </Card>
           ))}
         </div>
-      ) : data && data.items.length > 0 ? (
+      ) : items && items.length > 0 ? (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
-          {data.items.map((nft) => (
+          {items.map((nft) => (
             <Link key={nft.tokenId} href={`/collection/${nft.tokenId}`}>
               <Card size="sm" className="hover:ring-primary/40 transition-all cursor-pointer">
                 {nft.image ? (
@@ -106,12 +193,14 @@ export function CollectionGrid() {
         </div>
       ) : (
         <div className="text-center py-12">
-          <p className="text-muted-foreground">No NFTs minted yet.</p>
+          <p className="text-muted-foreground">
+            {searchQuery.trim() ? "No matching NFTs found." : "No NFTs minted yet."}
+          </p>
         </div>
       )}
 
       {/* Pagination */}
-      {data && data.totalPages > 1 && (
+      {!searchQuery.trim() && data && data.totalPages > 1 && (
         <div className="flex items-center justify-center gap-2">
           <Button
             variant="outline"

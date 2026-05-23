@@ -5,10 +5,12 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { ConnectButton } from "@rainbow-me/rainbowkit"
 import { useAccount } from "wagmi"
+import { miningChain } from "@/lib/mining-config"
 
 const baseNavLinks = [
   { href: "/", label: "Home" },
   { href: "/collection", label: "Collection" },
+  { href: "/mine", label: "Mine" },
   { href: "/how-to-mint", label: "How to Mint" },
 ]
 
@@ -16,6 +18,7 @@ export function Header() {
   const pathname = usePathname()
   const { isConnected } = useAccount()
   const [open, setOpen] = useState(false)
+  const requiresMiningChain = pathname === "/mine" || pathname.startsWith("/admin")
 
   const navLinks = isConnected
     ? [...baseNavLinks, { href: "/my-holdings", label: "My Holdings" }]
@@ -39,7 +42,7 @@ export function Header() {
   }, [open])
 
   return (
-    <header className="sticky top-0 z-50 border-b border-sentinel/20 bg-background/80 backdrop-blur-md">
+    <header className="sticky top-0 z-50 glass-panel border-x-0 border-t-0 rounded-none bg-background/80">
       <div className="container mx-auto max-w-6xl relative flex items-center justify-between h-14 px-4 gap-2">
         {/* Hamburger (mobile only) */}
         <button
@@ -68,21 +71,21 @@ export function Header() {
 
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2">
-          <span className="font-pixel text-sentinel text-[9px] tracking-wider animate-text-glow">
+          <span className="font-pixel text-sentinel text-[20px] tracking-widest animate-text-glow font-bold">
             SENTINEL
           </span>
         </Link>
 
         {/* Desktop nav (absolutely centered) */}
-        <nav className="hidden sm:flex items-center gap-1 absolute left-1/2 -translate-x-1/2">
+        <nav className="hidden md:flex items-center gap-6 absolute left-1/2 -translate-x-1/2">
           {navLinks.map((link) => (
             <Link
               key={link.href}
               href={link.href}
-              className={`px-3 py-1.5 text-[9px] rounded-md transition-colors ${
+              className={`whitespace-nowrap rounded-none border px-4 py-2 text-[14px] font-pixel uppercase tracking-widest transition-all duration-300 ${
                 pathname === link.href
-                  ? "text-sentinel bg-sentinel/10"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                  ? "border-sentinel text-sentinel bg-sentinel/10 shadow-[0_0_18px_rgba(0,255,157,0.18)]"
+                  : "border-sentinel text-muted-foreground hover:text-sentinel hover:bg-sentinel/5 hover:shadow-[0_0_18px_rgba(0,255,157,0.18)]"
               }`}
             >
               {link.label}
@@ -96,6 +99,7 @@ export function Header() {
             {({ account, chain, openAccountModal, openChainModal, openConnectModal, mounted }) => {
               const ready = mounted
               const connected = ready && account && chain
+              const wrongMiningChain = Boolean(connected && requiresMiningChain && chain.id !== miningChain.id)
               return (
                 <div
                   {...(!ready && {
@@ -109,20 +113,20 @@ export function Header() {
                         <button
                           type="button"
                           onClick={openConnectModal}
-                          className="font-pixel text-[8px] tracking-wider px-3 py-2 rounded-md border border-sentinel/40 bg-sentinel/10 text-sentinel hover:bg-sentinel hover:text-black transition-colors"
+                          className="btn-cyber px-4 py-2"
                         >
                           CONNECT
                         </button>
                       )
                     }
-                    if (chain.unsupported) {
+                    if (chain.unsupported || wrongMiningChain) {
                       return (
                         <button
                           type="button"
                           onClick={openChainModal}
-                          className="font-pixel text-[8px] tracking-wider px-3 py-2 rounded-md border border-red-500/60 bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors"
+                          className="btn-cyber px-4 py-2 !border-red-500 !text-red-400 hover:!bg-red-500 hover:!text-black"
                         >
-                          WRONG NET
+                          {wrongMiningChain ? `SWITCH ${miningChain.name.toUpperCase()}` : "WRONG NET"}
                         </button>
                       )
                     }
@@ -132,7 +136,7 @@ export function Header() {
                           type="button"
                           onClick={openChainModal}
                           aria-label="Switch network"
-                          className="hidden sm:flex items-center gap-1 font-pixel text-[8px] tracking-wider px-2 py-2 rounded-md border border-sentinel/30 bg-background/60 text-sentinel hover:bg-sentinel/10 transition-colors"
+                          className="hidden sm:flex items-center gap-2 px-3 py-2 border border-sentinel/30 bg-background/60 text-sentinel hover:bg-sentinel/10 transition-colors font-pixel text-[9px] tracking-wider rounded-md"
                         >
                           <span className="inline-block w-1.5 h-1.5 rounded-full bg-sentinel animate-pulse" />
                           {chain.name?.toUpperCase() ?? "ETHEREUM"}
@@ -140,7 +144,7 @@ export function Header() {
                         <button
                           type="button"
                           onClick={openAccountModal}
-                          className="font-pixel text-[8px] tracking-wider px-3 py-2 rounded-md border border-sentinel/40 bg-sentinel/10 text-sentinel hover:bg-sentinel hover:text-black transition-colors"
+                          className="btn-cyber px-4 py-2"
                         >
                           {account.displayName}
                         </button>
@@ -174,10 +178,10 @@ export function Header() {
             <Link
               key={link.href}
               href={link.href}
-              className={`px-4 py-3 rounded-md text-[11px] font-pixel tracking-wider transition-colors ${
+              className={`whitespace-nowrap rounded-none border px-4 py-4 text-[16px] font-pixel uppercase tracking-widest transition-all duration-300 ${
                 pathname === link.href
-                  ? "text-sentinel bg-sentinel/10 border border-sentinel/30"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted border border-transparent"
+                  ? "border-sentinel text-sentinel bg-sentinel/10 shadow-[0_0_18px_rgba(0,255,157,0.18)]"
+                  : "border-sentinel text-muted-foreground hover:text-sentinel hover:bg-sentinel/5 hover:shadow-[0_0_18px_rgba(0,255,157,0.18)]"
               }`}
             >
               {link.label}

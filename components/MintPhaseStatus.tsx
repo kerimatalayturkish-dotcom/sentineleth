@@ -111,14 +111,14 @@ export function MintPhaseStatus() {
   }
 
   return (
-    <div className="mt-6 space-y-3">
+    <div className="mt-8 space-y-4">
       {/* Phase badge */}
       <div className="flex items-center justify-center gap-2">
-        <span className="font-pixel text-[7px] sm:text-[8px] text-muted-foreground tracking-widest">
+        <span className="font-pixel text-[10px] sm:text-[12px] text-muted-foreground tracking-widest">
           PHASE:
         </span>
         <span
-          className={`font-pixel text-[8px] sm:text-[9px] tracking-widest ${tone} animate-text-glow`}
+          className={`font-pixel text-[12px] sm:text-[14px] tracking-widest ${tone} animate-text-glow`}
         >
           {status.phaseLabel.toUpperCase()}
         </span>
@@ -126,7 +126,7 @@ export function MintPhaseStatus() {
 
       {/* Progress + counts */}
       <div className="max-w-md mx-auto">
-        <div className="h-1.5 w-full bg-card/60 rounded-full overflow-hidden border border-sentinel/10">
+        <div className="h-2 w-full overflow-hidden rounded-full border border-sentinel/10 bg-card/60">
           <div
             className={`h-full transition-all duration-700 ${
               status.phase === "public_mint" || status.phase === "airdrop_claim"
@@ -136,7 +136,7 @@ export function MintPhaseStatus() {
             style={{ width: `${pct}%` }}
           />
         </div>
-        <p className="mt-2 font-pixel text-[7px] sm:text-[8px] text-muted-foreground tracking-widest text-center">
+        <p className="mt-3 text-center font-pixel text-[10px] sm:text-[12px] text-muted-foreground tracking-widest">
           {used.toLocaleString()} / {cap.toLocaleString()}
           {status.phase === "public_mint" && (
             <>
@@ -150,43 +150,33 @@ export function MintPhaseStatus() {
 
       {/* Scarcity warning */}
       {status.lowSupplyWarning && (
-        <p className="font-pixel text-[7px] sm:text-[8px] text-amber-400 tracking-widest text-center max-w-md mx-auto leading-relaxed">
+        <p className="mx-auto max-w-md text-center font-pixel text-[10px] sm:text-[12px] text-amber-400 tracking-widest leading-relaxed">
           {status.lowSupplyWarning.toUpperCase()}
         </p>
       )}
 
       {/* Off-phase reason (sold out / paused / closed) */}
       {status.reasonIfNotMintable && status.phase !== "public_mint" && (
-        <p className="text-[10px] sm:text-[11px] text-muted-foreground text-center max-w-md mx-auto leading-relaxed">
+        <p className="mx-auto max-w-md text-center text-[14px] sm:text-[16px] text-muted-foreground leading-relaxed">
           {status.reasonIfNotMintable}
         </p>
       )}
 
       {/* CTA row */}
-      <div className="mt-6 flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 sm:gap-4 max-w-xs sm:max-w-none mx-auto">
-        <Link href="/how-to-mint" className="w-full sm:w-auto">
-          <Button
-            variant="outline"
-            size="lg"
-            className="w-full sm:w-auto border-sentinel/30 hover:bg-sentinel/10 text-[9px] px-6 py-5 sm:py-6"
-          >
-            How to Mint
-          </Button>
-        </Link>
-
+      <div className="mx-auto mt-7 flex justify-center">
         {primaryCtaDisabled || !primaryCtaHref ? (
           <Button
             size="lg"
             disabled
-            className="w-full sm:w-auto bg-black/40 text-muted-foreground border border-muted-foreground/20 cursor-not-allowed text-[9px] px-6 py-5 sm:py-6"
+            className="h-12 cursor-not-allowed border border-muted-foreground/20 bg-black/40 px-5 text-[13px] text-muted-foreground sm:h-14 sm:text-[14px]"
           >
             {primaryCtaLabel}
           </Button>
         ) : (
-          <Link href={primaryCtaHref} className="border-trace inline-block w-full sm:w-auto">
+          <Link href={primaryCtaHref} className="border-trace inline-block">
             <Button
               size="lg"
-              className="w-full sm:w-auto bg-black text-sentinel hover:bg-sentinel/10 hover:text-sentinel border-0 text-[9px] px-6 py-5 sm:py-6"
+              className="h-12 border-0 bg-black px-5 text-[13px] text-sentinel hover:bg-sentinel/10 hover:text-sentinel sm:h-14 sm:text-[14px]"
             >
               {primaryCtaLabel}
             </Button>

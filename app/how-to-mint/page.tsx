@@ -160,7 +160,7 @@ export default function HowToMintPage() {
               hex data matches what Claude returned.
             </li>
             <li>
-              Once the transaction confirms on Sepolia, your token shows up
+              Once the transaction confirms on Ethereum, your token shows up
               under{" "}
               <Link href="/my-holdings" className="text-sentinel underline">
                 My Holdings

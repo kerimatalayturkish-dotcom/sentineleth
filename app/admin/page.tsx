@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 
 interface ContractStatus {
   contract: {
@@ -78,6 +78,151 @@ interface IrysStatus {
   } | null
 }
 
+interface AdminAuthResponse {
+  ok?: boolean
+  requiresTotp?: boolean
+  resetTotpStep?: boolean
+  error?: string
+}
+
+interface ManualExecutionPayload {
+  to: string
+  data: string
+  valueWei: string
+  valueEth: string
+  chainId: number
+  chainName: string
+  requiredSigners: string[]
+  note: string
+}
+
+interface OperatorActionResult {
+  action: string
+  mode: "direct" | "manual"
+  txHash: string | null
+  localSigner?: string | null
+  warning?: string | null
+  execution: ManualExecutionPayload | null
+}
+
+interface MiningStatus {
+  configured: boolean
+  error: string | null
+  chainId: number
+  chainName: string
+  explorerUrl: string
+  contract: {
+    address: string
+    admin: string
+    adminSigner: string | null
+    adminSignerConfigured: boolean
+    adminSignerIsAdmin: boolean
+    signer: string
+    senti: string
+    currentBlock: number
+    startBlock: number | null
+    started: boolean
+    active: boolean
+    maxRewardRounds: number
+    rewardedRounds: number
+    remainingRewardRounds: number
+    mined: string
+    remainingMineableSupply: string
+    phaseOneSupply: string
+    initialLiquiditySupply: string
+    initialLiquidityMinted: boolean
+    mineableSupply: string
+    liquidityManagerReserveSupply: string
+    maxAiAgentReservedSupply: string
+    aiAgentReservedSupply: string
+    aiAgentMinter: string
+    aiAgentMinterSet: boolean
+    aiAgentMinted: string
+    aiAgentRemainingSupply: string
+    blockReward: string
+  } | null
+}
+
+interface ContractStatus {
+  mining?: MiningStatus
+}
+
+interface TokenStatus {
+  configured: boolean
+  error: string | null
+  chainId: number
+  chainName: string
+  explorerUrl: string
+  contract: {
+    address: string
+    senti: string
+    positionManager: string
+    permit2: string
+    adminSafe: string
+    opsSafe: string
+    adminSigner: string | null
+    adminSignerConfigured: boolean
+    adminSignerIsAdminSafe: boolean
+    adminSignerIsOpsSafe: boolean
+    adminSignerAuthorizedKeeper: boolean
+    adminSignerCanCompound: boolean
+    reserveTarget: string | null
+    reserveEthBalance: string
+    reserveSentiBalance: string
+    sentiIsCurrency0: boolean
+    poolKey: {
+      currency0: string
+      currency1: string
+      fee: number
+      tickSpacing: number
+      hooks: string
+    }
+    poolId: string
+    trackedPositionTokenId: string
+    trackedPositionSet: boolean
+    trackedPositionOwner: string | null
+    trackedPositionLiquidity: string | null
+    trackedPositionTickLower: number | null
+    trackedPositionTickUpper: number | null
+    trackedPositionCurrentTick: number | null
+    trackedPositionEthBalance: string | null
+    trackedPositionSentiBalance: string | null
+    minEthToCompound: string
+    compoundCooldown: number
+    maxEthPerCompound: string
+    maxSentiPerCompound: string
+    maxDeadlineWindow: number
+    lastCompoundAt: number
+  } | null
+}
+
+interface CompoundEstimate {
+  targetEth: string
+  amount0Max: string
+  amount1Max: string
+  estimatedSenti: string
+  liquidityIncrease: string
+  validated: boolean
+  cooldownActive: boolean
+  nextCompoundAt: number
+  deadlineOffset: number
+  sentiIsCurrency0: boolean
+  basis: {
+    source: "compound_history" | "tracked_position"
+    txHash: string | null
+    blockNumber: number | null
+    liquidityIncrease: string
+    ethAmountMax: string
+    sentiAmountMax: string
+    trackedPositionTokenId: string | null
+    currentTick: number | null
+  }
+}
+
+interface ContractStatus {
+  token?: TokenStatus
+}
+
 function formatTime(ts: number): string {
   if (ts === 0) return "—"
   return new Date(ts * 1000).toLocaleString()
@@ -96,10 +241,10 @@ function shortTx(hash: string): string {
 const EXPLORER =
   process.env.NEXT_PUBLIC_EXPLORER_URL || "https://etherscan.io"
 
-function TxLink({ hash }: { hash: string }) {
+function TxLink({ hash, explorer = EXPLORER }: { hash: string; explorer?: string }) {
   return (
     <a
-      href={`${EXPLORER}/tx/${hash}`}
+      href={`${explorer}/tx/${hash}`}
       target="_blank"
       rel="noopener noreferrer"
       className="text-blue-300 hover:text-blue-200 underline-offset-2 hover:underline"
@@ -112,8 +257,41 @@ function TxLink({ hash }: { hash: string }) {
 function Row({ label, value, mono }: { label: string; value: string; mono?: boolean }) {
   return (
     <div className="flex items-center justify-between gap-3 text-xs">
-      <span className="text-zinc-500">{label}</span>
-      <span className={`text-zinc-200 ${mono ? "font-mono" : ""}`}>{value}</span>
+      <span className="shrink-0 text-zinc-500">{label}</span>
+      <span className={`min-w-0 break-all text-right text-zinc-200 ${mono ? "font-mono" : ""}`}>{value}</span>
+    </div>
+  )
+}
+
+function OperatorActionNotice({ result, explorer }: { result: OperatorActionResult; explorer: string }) {
+  if (result.mode === "direct" && result.txHash) {
+    return (
+      <div className="bg-green-900/30 border border-green-700 rounded p-2 text-xs text-green-200">
+        {result.action} ok &middot; <TxLink hash={result.txHash} explorer={explorer} />
+      </div>
+    )
+  }
+
+  if (!result.execution) {
+    return null
+  }
+
+  return (
+    <div className="bg-yellow-900/30 border border-yellow-700 rounded p-3 text-xs text-yellow-100 space-y-2">
+      <div className="font-medium">{result.action} requires manual or Safe execution.</div>
+      {result.warning ? <div className="text-yellow-200/90">{result.warning}</div> : null}
+      <Row label="Chain" value={`${result.execution.chainName} (${result.execution.chainId})`} />
+      <Row label="Local Signer" value={result.localSigner ?? "(none resolved on server)"} mono />
+      <Row label="Required Signers" value={result.execution.requiredSigners.join(", ")} mono />
+      <Row label="Target" value={result.execution.to} mono />
+      <Row label="Value" value={`${result.execution.valueEth} ETH (${result.execution.valueWei} wei)`} mono />
+      <div>
+        <div className="mb-1 text-zinc-400">Calldata</div>
+        <div className="break-all rounded bg-zinc-950/70 p-2 font-mono text-[11px] text-zinc-200">
+          {result.execution.data}
+        </div>
+      </div>
+      <div className="text-yellow-50/90">{result.execution.note}</div>
     </div>
   )
 }
@@ -152,7 +330,10 @@ export default function AdminPage() {
   const [authed, setAuthed] = useState(false)
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
+  const [totpCode, setTotpCode] = useState("")
   const [loginError, setLoginError] = useState("")
+  const [loginBusy, setLoginBusy] = useState(false)
+  const [loginStep, setLoginStep] = useState<"credentials" | "totp">("credentials")
   const [status, setStatus] = useState<ContractStatus | null>(null)
   const [fetchError, setFetchError] = useState("")
   const [pauseBusy, setPauseBusy] = useState(false)
@@ -172,6 +353,31 @@ export default function AdminPage() {
   const [irysError, setIrysError] = useState("")
   const [irysAmount, setIrysAmount] = useState("")
   const [irysBusy, setIrysBusy] = useState(false)
+  const [miningBusy, setMiningBusy] = useState(false)
+  const [miningError, setMiningError] = useState("")
+  const [miningResult, setMiningResult] = useState<OperatorActionResult | null>(null)
+  const [tokenBusy, setTokenBusy] = useState<string | null>(null)
+  const [tokenError, setTokenError] = useState("")
+  const [tokenResult, setTokenResult] = useState<OperatorActionResult | null>(null)
+  const [aiAgentMinterInput, setAiAgentMinterInput] = useState("")
+  const [aiAgentBurnAmountInput, setAiAgentBurnAmountInput] = useState("")
+  const [keeperAddressInput, setKeeperAddressInput] = useState("")
+  const [trackedPositionTokenIdInput, setTrackedPositionTokenIdInput] = useState("")
+  const [compoundMinEthInput, setCompoundMinEthInput] = useState("")
+  const [compoundCooldownInput, setCompoundCooldownInput] = useState("")
+  const [compoundMaxEthInput, setCompoundMaxEthInput] = useState("")
+  const [compoundMaxSentiInput, setCompoundMaxSentiInput] = useState("")
+  const [compoundMaxDeadlineWindowInput, setCompoundMaxDeadlineWindowInput] = useState("")
+  const [compoundEthTargetInput, setCompoundEthTargetInput] = useState("")
+  const [compoundEstimateBusy, setCompoundEstimateBusy] = useState(false)
+  const [compoundEstimateError, setCompoundEstimateError] = useState("")
+  const [compoundEstimate, setCompoundEstimate] = useState<CompoundEstimate | null>(null)
+  const [compoundLiquidityInput, setCompoundLiquidityInput] = useState("")
+  const [compoundAmount0MaxInput, setCompoundAmount0MaxInput] = useState("")
+  const [compoundAmount1MaxInput, setCompoundAmount1MaxInput] = useState("")
+  const [compoundDeadlineInput, setCompoundDeadlineInput] = useState("")
+  const [reserveBurnAmountInput, setReserveBurnAmountInput] = useState("")
+  const compoundEstimateRequestId = useRef(0)
 
   const fetchStatus = useCallback(async () => {
     try {
@@ -316,27 +522,183 @@ export default function AdminPage() {
     }
   }
 
+  async function handleMiningStart() {
+    const mining = status?.mining
+    const contract = mining?.contract
+    if (!mining || !contract) return
+
+    if (!window.confirm(
+      `Start $SENTI mining on ${mining.chainName} now?\n\nThe current block becomes miningStartBlock. Skipped chain blocks do not consume rewards; mining stays open until ${contract.maxRewardRounds.toLocaleString()} rewarded rounds are claimed. This can only happen once.`,
+    )) return
+
+    setMiningBusy(true)
+    setMiningError("")
+    setMiningResult(null)
+    try {
+      const res = await fetch("/api/admin/mining-action", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "startMining" }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || "startMining failed")
+      setMiningResult({
+        action: "startMining",
+        mode: data.mode === "manual" ? "manual" : "direct",
+        txHash: data.txHash ?? null,
+        localSigner: data.localSigner ?? null,
+        warning: data.warning ?? null,
+        execution: data.execution ?? null,
+      })
+      if (data.mode !== "manual") {
+        await fetchStatus()
+      }
+    } catch (err) {
+      setMiningError(err instanceof Error ? err.message : "startMining failed")
+    } finally {
+      setMiningBusy(false)
+    }
+  }
+
+  async function handleTokenAction(
+    action:
+      | "setAiAgentMinter"
+      | "burnUnmintedAiAgentSupply"
+      | "setKeeper"
+      | "setTrackedPositionTokenId"
+      | "setCompoundConfig"
+      | "compoundLiquidity"
+      | "burnReserveSenti"
+      | "refreshPermit2Allowance",
+    extra: Record<string, string | boolean> = {},
+    confirmMsg?: string,
+  ) {
+    if (confirmMsg && !window.confirm(confirmMsg)) return
+    setTokenBusy(action)
+    setTokenError("")
+    setTokenResult(null)
+    try {
+      const res = await fetch("/api/admin/token-action", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action, ...extra }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || `${action} failed`)
+      setTokenResult({
+        action,
+        mode: data.mode === "manual" ? "manual" : "direct",
+        txHash: data.txHash ?? null,
+        localSigner: data.localSigner ?? null,
+        warning: data.warning ?? null,
+        execution: data.execution ?? null,
+      })
+      if (data.mode !== "manual") {
+        await fetchStatus()
+      }
+    } catch (err) {
+      setTokenError(err instanceof Error ? err.message : `${action} failed`)
+    } finally {
+      setTokenBusy(null)
+    }
+  }
+
+  const estimateCompoundFromEth = useCallback(async (ethAmount: string) => {
+    const requestId = ++compoundEstimateRequestId.current
+    if (!ethAmount.trim()) {
+      setCompoundEstimateBusy(false)
+      setCompoundEstimateError("")
+      setCompoundEstimate(null)
+      return
+    }
+
+    setCompoundEstimateBusy(true)
+    setCompoundEstimateError("")
+    try {
+      const res = await fetch("/api/admin/compound-estimate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ethAmount }),
+      })
+      const data = await res.json()
+      if (requestId !== compoundEstimateRequestId.current) return
+      if (!res.ok) throw new Error(data.error || "Compound estimate failed")
+
+      setCompoundEstimate(data as CompoundEstimate)
+      setCompoundLiquidityInput(data.liquidityIncrease)
+      setCompoundAmount0MaxInput(data.amount0Max)
+      setCompoundAmount1MaxInput(data.amount1Max)
+    } catch (err) {
+      if (requestId !== compoundEstimateRequestId.current) return
+      setCompoundEstimate(null)
+      setCompoundEstimateError(err instanceof Error ? err.message : "Compound estimate failed")
+    } finally {
+      if (requestId === compoundEstimateRequestId.current) {
+        setCompoundEstimateBusy(false)
+      }
+    }
+  }, [])
+
+  const resetPendingTotpStep = useCallback(async () => {
+    await fetch("/api/admin/auth", { method: "DELETE" })
+    setLoginStep("credentials")
+    setPassword("")
+    setTotpCode("")
+    setLoginError("")
+  }, [])
+
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault()
     setLoginError("")
-    const res = await fetch("/api/admin/auth", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, password }),
-    })
-    if (res.ok) {
+    setLoginBusy(true)
+
+    try {
+      const payload = loginStep === "totp"
+        ? { totpCode }
+        : { username, password }
+
+      const res = await fetch("/api/admin/auth", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      })
+      const data = await res.json() as AdminAuthResponse
+
+      if (!res.ok) {
+        if (data.resetTotpStep) {
+          setLoginStep("credentials")
+          setTotpCode("")
+        }
+        setLoginError(data.error || (loginStep === "totp" ? "Code verification failed" : "Login failed"))
+        return
+      }
+
+      if (data.requiresTotp) {
+        setLoginStep("totp")
+        setPassword("")
+        setTotpCode("")
+        return
+      }
+
       setAuthed(true)
+      setLoginStep("credentials")
       setPassword("")
-      fetchStatus()
-    } else {
-      const data = await res.json()
-      setLoginError(data.error || "Login failed")
+      setTotpCode("")
+      void fetchStatus()
+    } catch (err) {
+      setLoginError(err instanceof Error ? err.message : "Login failed")
+    } finally {
+      setLoginBusy(false)
     }
   }
 
   async function handleLogout() {
     await fetch("/api/admin/auth", { method: "DELETE" })
     setAuthed(false)
+    setLoginStep("credentials")
+    setPassword("")
+    setTotpCode("")
+    setLoginError("")
     setStatus(null)
   }
 
@@ -352,31 +714,101 @@ export default function AdminPage() {
     return () => clearInterval(interval)
   }, [authed, fetchStatus, fetchIrys])
 
+  useEffect(() => {
+    const tokenContract = status?.token?.contract
+    if (!tokenContract) return
+    setTrackedPositionTokenIdInput((current) => current || (tokenContract.trackedPositionSet ? tokenContract.trackedPositionTokenId : ""))
+    setCompoundMinEthInput((current) => current || tokenContract.minEthToCompound)
+    setCompoundCooldownInput((current) => current || String(tokenContract.compoundCooldown))
+    setCompoundMaxEthInput((current) => current || tokenContract.maxEthPerCompound)
+    setCompoundMaxSentiInput((current) => current || tokenContract.maxSentiPerCompound)
+    setCompoundMaxDeadlineWindowInput((current) => current || String(tokenContract.maxDeadlineWindow))
+  }, [status?.token?.contract])
+
+  useEffect(() => {
+    if (!authed || !status?.token?.contract?.address) return
+
+    const trimmed = compoundEthTargetInput.trim()
+    if (!trimmed) {
+      compoundEstimateRequestId.current += 1
+      setCompoundEstimateBusy(false)
+      setCompoundEstimateError("")
+      setCompoundEstimate(null)
+      return
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      void estimateCompoundFromEth(trimmed)
+    }, 450)
+
+    return () => window.clearTimeout(timeoutId)
+  }, [authed, compoundEthTargetInput, estimateCompoundFromEth, status?.token?.contract?.address])
+
   if (!authed) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
         <form onSubmit={handleLogin} className="bg-zinc-900 p-8 rounded-lg border border-zinc-700 w-80 space-y-4">
           <h1 className="text-white text-lg font-bold text-center">Admin Monitor</h1>
-          <input
-            type="text"
-            placeholder="Username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            className="w-full px-3 py-2 bg-zinc-800 border border-zinc-600 rounded text-white text-sm"
-            autoComplete="username"
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full px-3 py-2 bg-zinc-800 border border-zinc-600 rounded text-white text-sm"
-            autoComplete="current-password"
-          />
+          {loginStep === "credentials" ? (
+            <>
+              <input
+                type="text"
+                placeholder="Username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                className="w-full px-3 py-2 bg-zinc-800 border border-zinc-600 rounded text-white text-sm"
+                autoComplete="username"
+              />
+              <input
+                type="password"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full px-3 py-2 bg-zinc-800 border border-zinc-600 rounded text-white text-sm"
+                autoComplete="current-password"
+              />
+              <p className="text-xs text-zinc-400">
+                If admin 2FA is enabled, you will enter a 6-digit Google Authenticator code after the password step.
+              </p>
+            </>
+          ) : (
+            <>
+              <div className="rounded border border-zinc-700 bg-zinc-800/80 p-3 text-xs text-zinc-300">
+                Password accepted. Enter the 6-digit code from Google Authenticator to finish sign-in.
+              </div>
+              <input
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                maxLength={6}
+                placeholder="6-digit code"
+                value={totpCode}
+                onChange={(e) => setTotpCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                className="w-full px-3 py-2 bg-zinc-800 border border-zinc-600 rounded text-white text-sm tracking-[0.35em]"
+                autoComplete="one-time-code"
+              />
+            </>
+          )}
           {loginError && <p className="text-red-400 text-xs">{loginError}</p>}
-          <button type="submit" className="w-full py-2 bg-blue-600 hover:bg-blue-500 text-white rounded text-sm font-medium">
-            Login
-          </button>
+          {loginStep === "totp" ? (
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => void resetPendingTotpStep()}
+                className="w-full py-2 bg-zinc-800 hover:bg-zinc-700 text-white rounded text-sm font-medium border border-zinc-600"
+                disabled={loginBusy}
+              >
+                Back
+              </button>
+              <button type="submit" className="w-full py-2 bg-blue-600 hover:bg-blue-500 text-white rounded text-sm font-medium" disabled={loginBusy || totpCode.length !== 6}>
+                {loginBusy ? "Verifying..." : "Verify code"}
+              </button>
+            </div>
+          ) : (
+            <button type="submit" className="w-full py-2 bg-blue-600 hover:bg-blue-500 text-white rounded text-sm font-medium" disabled={loginBusy}>
+              {loginBusy ? "Checking..." : "Continue"}
+            </button>
+          )}
         </form>
       </div>
     )
@@ -385,6 +817,26 @@ export default function AdminPage() {
   const s = status
   const c = s?.contract
   const sup = s?.supply
+  const mining = s?.mining
+  const miningContract = mining?.contract
+  const token = s?.token
+  const tokenContract = token?.contract
+  const miningStartDisabled =
+    !miningContract ||
+    miningContract.started ||
+    miningBusy
+  const aiReserveAdminDisabled =
+    !miningContract ||
+    tokenBusy !== null
+  const tokenAdminDisabled =
+    !tokenContract ||
+    tokenBusy !== null
+  const tokenNextCompoundAt = tokenContract ? tokenContract.lastCompoundAt + tokenContract.compoundCooldown : 0
+  const tokenCompoundCooldownActive = tokenContract ? tokenContract.lastCompoundAt !== 0 && Math.floor(Date.now() / 1000) < tokenNextCompoundAt : false
+  const tokenCompoundDisabled =
+    !tokenContract ||
+    tokenCompoundCooldownActive ||
+    tokenBusy !== null
 
   return (
     <div className="min-h-screen bg-black text-white p-6">
@@ -451,7 +903,7 @@ export default function AdminPage() {
             {/* Contract Actions */}
             <div className="bg-zinc-900 border border-zinc-700 rounded-lg p-4 space-y-4">
               <div className="flex items-center justify-between">
-                <h2 className="text-sm font-bold text-zinc-400 uppercase">Contract Actions</h2>
+                <h2 className="text-sm font-bold text-zinc-400 uppercase">NFT Contract Actions</h2>
                 {!c.ownerConfigured && (
                   <span className="text-xs text-yellow-400">OWNER_PRIVATE_KEY not set</span>
                 )}
@@ -663,6 +1115,543 @@ export default function AdminPage() {
               </div>
             </div>
 
+            {/* Mining Control */}
+            {mining && (
+              <div className="bg-zinc-900 border border-zinc-700 rounded-lg p-4 space-y-4">
+                <div className="flex items-center justify-between gap-3">
+                  <h2 className="text-sm font-bold text-zinc-400 uppercase">Mining Control</h2>
+                  <span className="text-xs text-zinc-500">
+                    {mining.chainName} · {mining.chainId}
+                  </span>
+                </div>
+
+                {mining.error && (
+                  <div className="bg-yellow-900/30 border border-yellow-700 rounded p-2 text-xs text-yellow-200">
+                    {mining.error}
+                  </div>
+                )}
+                {miningResult && <OperatorActionNotice result={miningResult} explorer={mining.explorerUrl} />}
+                {miningError && (
+                  <div className="bg-red-900/30 border border-red-700 rounded p-2 text-xs text-red-300">
+                    {miningError}
+                  </div>
+                )}
+
+                {miningContract ? (
+                  <>
+                    <div className="grid md:grid-cols-2 gap-3">
+                      <div className="bg-zinc-950/60 border border-zinc-800 rounded p-3 space-y-2">
+                        <Row label="PatrolMiner" value={miningContract.address} mono />
+                        <Row label="SENTI" value={miningContract.senti} mono />
+                        <Row label="Backend Signer" value={miningContract.signer} mono />
+                        <Row label="Admin" value={miningContract.admin} mono />
+                        <Row label="Server Admin Signer" value={miningContract.adminSigner ?? "(not configured)"} mono />
+                        <Row label="Signer Is Admin" value={miningContract.adminSignerIsAdmin ? "Yes" : "No"} />
+                      </div>
+                      <div className="bg-zinc-950/60 border border-zinc-800 rounded p-3 space-y-2">
+                        <Row label="Status" value={miningContract.active ? "Active" : miningContract.started ? "Started" : "Not started"} />
+                        <Row label="Current Block" value={miningContract.currentBlock.toLocaleString()} />
+                        <Row label="Start Block" value={miningContract.startBlock?.toLocaleString() ?? "—"} />
+                        <Row label="Rewarded Rounds" value={`${miningContract.rewardedRounds.toLocaleString()} / ${miningContract.maxRewardRounds.toLocaleString()}`} />
+                        <Row label="Remaining Rounds" value={miningContract.remainingRewardRounds.toLocaleString()} />
+                        <Row label="Mined" value={`${miningContract.mined} / ${miningContract.mineableSupply} SENTI`} />
+                        <Row label="Remaining Mineable" value={`${miningContract.remainingMineableSupply} SENTI`} />
+                        <Row label="Block Reward" value={`${miningContract.blockReward} SENTI`} />
+                        <Row label="Initial LP Seed" value={`${miningContract.initialLiquiditySupply} SENTI ${miningContract.initialLiquidityMinted ? "minted" : "reserved"}`} />
+                        <Row label="Manager Reserve Allocation" value={`${miningContract.liquidityManagerReserveSupply} SENTI`} />
+                        <Row label="AI Reserve" value={`${miningContract.aiAgentMinted} minted / ${miningContract.aiAgentReservedSupply} current cap`} />
+                        <Row label="AI Remaining" value={`${miningContract.aiAgentRemainingSupply} SENTI`} />
+                        <Row label="AI Minter" value={miningContract.aiAgentMinterSet ? miningContract.aiAgentMinter : "(not set)"} mono />
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between gap-3 border-t border-zinc-800 pt-3">
+                      <div>
+                        <div className="text-sm font-medium">Start $SENTI mining <span className="text-red-400">(one-shot)</span></div>
+                        <div className="text-xs text-zinc-500">
+                          Sets miningStartBlock to the transaction block. Rewards continue until the fixed rewarded-round cap is exhausted.
+                        </div>
+                      </div>
+                      <button
+                        onClick={handleMiningStart}
+                        disabled={miningStartDisabled}
+                        title={
+                          miningContract.started
+                            ? "Mining already started"
+                              : !miningContract.adminSignerIsAdmin
+                                ? "Configured signer is not PatrolMiner admin. The route will return Safe/manual calldata instead of sending the tx."
+                                : "Start mining now"
+                        }
+                        className="px-3 py-2 text-xs font-medium rounded bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 disabled:cursor-not-allowed"
+                      >
+                        {miningContract.started ? "Already Started" : miningBusy ? "Working…" : "Start Mining"}
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <p className="text-xs text-zinc-500">
+                    PatrolMiner is not configured yet. Deploy mining core, then set NEXT_PUBLIC_PATROL_MINER_ADDRESS.
+                  </p>
+                )}
+              </div>
+            )}
+
+            {/* Token Treasury Control */}
+            {token && (
+              <div className="bg-zinc-900 border border-zinc-700 rounded-lg p-4 space-y-4">
+                <div className="flex items-center justify-between gap-3">
+                  <h2 className="text-sm font-bold text-zinc-400 uppercase">Token Treasury</h2>
+                  <span className="text-xs text-zinc-500">
+                    {token.chainName} · {token.chainId}
+                  </span>
+                </div>
+
+                {token.error && (
+                  <div className="bg-yellow-900/30 border border-yellow-700 rounded p-2 text-xs text-yellow-200">
+                    {token.error}
+                  </div>
+                )}
+                {tokenResult && <OperatorActionNotice result={tokenResult} explorer={token.explorerUrl} />}
+                {tokenError && (
+                  <div className="bg-red-900/30 border border-red-700 rounded p-2 text-xs text-red-300">
+                    {tokenError}
+                  </div>
+                )}
+
+                {tokenContract ? (
+                  <>
+                    <div className="grid xl:grid-cols-2 gap-3">
+                      <div className="bg-zinc-950/60 border border-zinc-800 rounded p-3 space-y-2">
+                        <div className="text-[10px] uppercase text-zinc-500">Manager Status</div>
+                        <Row label="Liquidity Manager" value={tokenContract.address} mono />
+                        <Row label="SENTI" value={tokenContract.senti} mono />
+                        <Row label="Position Manager" value={tokenContract.positionManager} mono />
+                        <Row label="Permit2" value={tokenContract.permit2} mono />
+                        <Row label="Admin Safe" value={tokenContract.adminSafe} mono />
+                        <Row label="Ops Safe" value={tokenContract.opsSafe} mono />
+                        <Row label="Server Signer" value={tokenContract.adminSigner ?? "(not configured)"} mono />
+                        <Row label="Signer Is Admin Safe" value={tokenContract.adminSignerIsAdminSafe ? "Yes" : "No"} />
+                        <Row label="Signer Is Ops Safe" value={tokenContract.adminSignerIsOpsSafe ? "Yes" : "No"} />
+                        <Row label="Signer Can Compound" value={tokenContract.adminSignerCanCompound ? "Yes" : "No"} />
+                        <Row label="Signer Is Keeper" value={tokenContract.adminSignerAuthorizedKeeper ? "Yes" : "No"} />
+                      </div>
+                      <div className="bg-zinc-950/60 border border-zinc-800 rounded p-3 space-y-2">
+                        <div className="text-[10px] uppercase text-zinc-500">Reserve State</div>
+                        <Row label="Reserve Target" value={`${tokenContract.reserveTarget ?? miningContract?.liquidityManagerReserveSupply ?? "—"} SENTI`} />
+                        <Row label="Manager SENTI" value={`${tokenContract.reserveSentiBalance} SENTI`} />
+                        <Row label="Manager ETH" value={`${tokenContract.reserveEthBalance} ETH`} />
+                        <Row label="Tracked Position" value={tokenContract.trackedPositionSet ? tokenContract.trackedPositionTokenId : "(not set)"} mono />
+                        <Row label="Tracked Owner" value={tokenContract.trackedPositionOwner ?? "—"} mono />
+                        <Row label="Tracked Liquidity" value={tokenContract.trackedPositionLiquidity ?? "—"} mono />
+                        <Row label="LP ETH" value={tokenContract.trackedPositionEthBalance !== null ? `${tokenContract.trackedPositionEthBalance} ETH` : "—"} />
+                        <Row label="LP SENTI" value={tokenContract.trackedPositionSentiBalance !== null ? `${tokenContract.trackedPositionSentiBalance} SENTI` : "—"} />
+                        <Row label="LP Tick Range" value={tokenContract.trackedPositionTickLower !== null && tokenContract.trackedPositionTickUpper !== null ? `[${tokenContract.trackedPositionTickLower}, ${tokenContract.trackedPositionTickUpper}]` : "—"} mono />
+                        <Row label="LP Current Tick" value={tokenContract.trackedPositionCurrentTick !== null ? tokenContract.trackedPositionCurrentTick.toLocaleString() : "—"} mono />
+                        <Row label="Pool Currency 0" value={tokenContract.poolKey.currency0} mono />
+                        <Row label="Pool Currency 1" value={tokenContract.poolKey.currency1} mono />
+                        <Row label="Pool Fee / Tick" value={`${tokenContract.poolKey.fee} / ${tokenContract.poolKey.tickSpacing}`} />
+                        <Row label="Hook" value={tokenContract.poolKey.hooks} mono />
+                        <Row label="SENTI Is Currency 0" value={tokenContract.sentiIsCurrency0 ? "Yes" : "No"} />
+                        <Row label="Pool ID" value={tokenContract.poolId} mono />
+                        <div className="pt-1 text-[10px] text-zinc-500">
+                          LP ETH and LP SENTI are the live principal inside the tracked NFT. Manager ETH and Manager SENTI above are idle balances outside the LP.
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="grid xl:grid-cols-2 gap-3">
+                      <div className="bg-zinc-950/60 border border-zinc-800 rounded p-3 space-y-2">
+                        <div className="text-[10px] uppercase text-zinc-500">Compound Guardrails</div>
+                        <Row label="Min ETH To Compound" value={`${tokenContract.minEthToCompound} ETH`} />
+                        <Row label="Cooldown" value={`${tokenContract.compoundCooldown.toLocaleString()} sec`} />
+                        <Row label="Max ETH / Compound" value={`${tokenContract.maxEthPerCompound} ETH`} />
+                        <Row label="Max SENTI / Compound" value={`${tokenContract.maxSentiPerCompound} SENTI`} />
+                        <Row label="Max Deadline Window" value={`${tokenContract.maxDeadlineWindow.toLocaleString()} sec`} />
+                        <Row label="Last Compound" value={tokenContract.lastCompoundAt > 0 ? formatTime(tokenContract.lastCompoundAt) : "—"} />
+                      </div>
+                      <div className="bg-zinc-950/60 border border-zinc-800 rounded p-3 space-y-2">
+                        <div className="text-[10px] uppercase text-zinc-500">AI Reserve State</div>
+                        <Row label="Current AI Cap" value={`${miningContract?.aiAgentReservedSupply ?? "—"} SENTI`} />
+                        <Row label="AI Minted" value={`${miningContract?.aiAgentMinted ?? "—"} SENTI`} />
+                        <Row label="AI Remaining" value={`${miningContract?.aiAgentRemainingSupply ?? "—"} SENTI`} />
+                        <Row label="AI Max Reserve" value={`${miningContract?.maxAiAgentReservedSupply ?? "—"} SENTI`} />
+                        <Row label="AI Minter" value={miningContract?.aiAgentMinterSet ? miningContract.aiAgentMinter : "(not set)"} mono />
+                        <Row label="Miner Admin Signer" value={miningContract?.adminSigner ?? "(not configured)"} mono />
+                        <Row label="Miner Signer Is Admin" value={miningContract?.adminSignerIsAdmin ? "Yes" : "No"} />
+                      </div>
+                    </div>
+
+                    <div className="grid xl:grid-cols-2 gap-4">
+                      <div className="space-y-3 border border-zinc-800 rounded-lg p-3 bg-zinc-950/40">
+                        <div>
+                          <div className="text-sm font-medium">AI-Agent Reserve Controls</div>
+                          <div className="text-xs text-zinc-500">
+                            PatrolMiner-only controls for the 300M AI reserve lane. Burn here reduces unminted allocation, not mined supply.
+                          </div>
+                        </div>
+                        <div className="space-y-2">
+                          <div className="text-xs text-zinc-400">Set AI minter</div>
+                          <div className="flex gap-2">
+                            <input
+                              type="text"
+                              value={aiAgentMinterInput}
+                              onChange={(e) => setAiAgentMinterInput(e.target.value)}
+                              placeholder={miningContract?.aiAgentMinterSet ? miningContract.aiAgentMinter : "0x… AI agent minter"}
+                              className="flex-1 px-3 py-2 bg-zinc-800 border border-zinc-600 rounded text-white text-xs font-mono"
+                            />
+                            <button
+                              onClick={() =>
+                                handleTokenAction(
+                                  "setAiAgentMinter",
+                                  { address: aiAgentMinterInput.trim() },
+                                  `Set AI minter to ${aiAgentMinterInput.trim()}?`,
+                                )
+                              }
+                              disabled={aiReserveAdminDisabled || !aiAgentMinterInput.trim()}
+                              className="px-3 py-2 text-xs rounded bg-blue-600 hover:bg-blue-500 disabled:opacity-40"
+                            >
+                              {tokenBusy === "setAiAgentMinter" ? "Working…" : "Set"}
+                            </button>
+                          </div>
+                        </div>
+                        <div className="space-y-2">
+                          <div className="text-xs text-zinc-400">Burn unminted AI reserve</div>
+                          <div className="flex gap-2">
+                            <input
+                              type="text"
+                              value={aiAgentBurnAmountInput}
+                              onChange={(e) => setAiAgentBurnAmountInput(e.target.value)}
+                              placeholder="Amount in SENTI"
+                              className="flex-1 px-3 py-2 bg-zinc-800 border border-zinc-600 rounded text-white text-xs"
+                            />
+                            <button
+                              onClick={() =>
+                                handleTokenAction(
+                                  "burnUnmintedAiAgentSupply",
+                                  { amount: aiAgentBurnAmountInput.trim() },
+                                  `Burn ${aiAgentBurnAmountInput.trim()} SENTI from the unminted AI reserve?`,
+                                )
+                              }
+                              disabled={aiReserveAdminDisabled || !aiAgentBurnAmountInput.trim()}
+                              className="px-3 py-2 text-xs rounded bg-red-600 hover:bg-red-500 disabled:opacity-40"
+                            >
+                              {tokenBusy === "burnUnmintedAiAgentSupply" ? "Working…" : "Burn"}
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="space-y-3 border border-zinc-800 rounded-lg p-3 bg-zinc-950/40">
+                        <div>
+                          <div className="text-sm font-medium">Keeper Access</div>
+                          <div className="text-xs text-zinc-500">
+                            Authorize or remove compound keepers on the liquidity manager.
+                          </div>
+                        </div>
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            value={keeperAddressInput}
+                            onChange={(e) => setKeeperAddressInput(e.target.value)}
+                            placeholder="0x… keeper address"
+                            className="flex-1 px-3 py-2 bg-zinc-800 border border-zinc-600 rounded text-white text-xs font-mono"
+                          />
+                          <button
+                            onClick={() =>
+                              handleTokenAction(
+                                "setKeeper",
+                                { address: keeperAddressInput.trim(), authorized: true },
+                                `Authorize ${keeperAddressInput.trim()} as a keeper?`,
+                              )
+                            }
+                            disabled={tokenAdminDisabled || !keeperAddressInput.trim()}
+                            className="px-3 py-2 text-xs rounded bg-green-600 hover:bg-green-500 disabled:opacity-40"
+                          >
+                            {tokenBusy === "setKeeper" ? "Working…" : "Authorize"}
+                          </button>
+                          <button
+                            onClick={() =>
+                              handleTokenAction(
+                                "setKeeper",
+                                { address: keeperAddressInput.trim(), authorized: false },
+                                `Remove ${keeperAddressInput.trim()} as a keeper?`,
+                              )
+                            }
+                            disabled={tokenAdminDisabled || !keeperAddressInput.trim()}
+                            className="px-3 py-2 text-xs rounded bg-zinc-700 hover:bg-zinc-600 disabled:opacity-40"
+                          >
+                            {tokenBusy === "setKeeper" ? "Working…" : "Remove"}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="grid xl:grid-cols-2 gap-4">
+                      <div className="space-y-3 border border-zinc-800 rounded-lg p-3 bg-zinc-950/40">
+                        <div>
+                          <div className="text-sm font-medium">Tracked Position / Permit2</div>
+                          <div className="text-xs text-zinc-500">
+                            Keep the manager pinned to the canonical Uniswap v4 LP position and refresh its Permit2 allowance when needed.
+                          </div>
+                        </div>
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            value={trackedPositionTokenIdInput}
+                            onChange={(e) => setTrackedPositionTokenIdInput(e.target.value)}
+                            placeholder="Uniswap position token ID"
+                            className="flex-1 px-3 py-2 bg-zinc-800 border border-zinc-600 rounded text-white text-xs"
+                          />
+                          <button
+                            onClick={() =>
+                              handleTokenAction(
+                                "setTrackedPositionTokenId",
+                                { tokenId: trackedPositionTokenIdInput.trim() },
+                                `Set tracked position token ID to ${trackedPositionTokenIdInput.trim()}?`,
+                              )
+                            }
+                            disabled={tokenAdminDisabled || !trackedPositionTokenIdInput.trim()}
+                            className="px-3 py-2 text-xs rounded bg-blue-600 hover:bg-blue-500 disabled:opacity-40"
+                          >
+                            {tokenBusy === "setTrackedPositionTokenId" ? "Working…" : "Update"}
+                          </button>
+                        </div>
+                        <button
+                          onClick={() => handleTokenAction("refreshPermit2Allowance", {}, "Refresh Permit2 allowance for the position manager?")}
+                          disabled={tokenAdminDisabled}
+                          className="px-3 py-2 text-xs rounded bg-zinc-700 hover:bg-zinc-600 disabled:opacity-40"
+                        >
+                          {tokenBusy === "refreshPermit2Allowance" ? "Working…" : "Refresh Permit2 Allowance"}
+                        </button>
+                      </div>
+
+                      <div className="space-y-3 border border-zinc-800 rounded-lg p-3 bg-zinc-950/40">
+                        <div>
+                          <div className="text-sm font-medium">Burn Manager Reserve</div>
+                          <div className="text-xs text-zinc-500">
+                            Burns manager-held SENTI only. This cannot touch mined balances or third-party holdings.
+                          </div>
+                        </div>
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            value={reserveBurnAmountInput}
+                            onChange={(e) => setReserveBurnAmountInput(e.target.value)}
+                            placeholder="Amount in SENTI"
+                            className="flex-1 px-3 py-2 bg-zinc-800 border border-zinc-600 rounded text-white text-xs"
+                          />
+                          <button
+                            onClick={() =>
+                              handleTokenAction(
+                                "burnReserveSenti",
+                                { amount: reserveBurnAmountInput.trim() },
+                                `Burn ${reserveBurnAmountInput.trim()} SENTI from the manager reserve?`,
+                              )
+                            }
+                            disabled={tokenAdminDisabled || !reserveBurnAmountInput.trim()}
+                            className="px-3 py-2 text-xs rounded bg-red-600 hover:bg-red-500 disabled:opacity-40"
+                          >
+                            {tokenBusy === "burnReserveSenti" ? "Working…" : "Burn Reserve"}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="space-y-3 border border-zinc-800 rounded-lg p-3 bg-zinc-950/40">
+                      <div>
+                        <div className="text-sm font-medium">Compound Guardrails</div>
+                        <div className="text-xs text-zinc-500">
+                          ETH and SENTI values are decimal token amounts. Cooldown and deadline window are raw seconds.
+                        </div>
+                      </div>
+                      <div className="grid md:grid-cols-5 gap-2">
+                        <input
+                          type="text"
+                          value={compoundMinEthInput}
+                          onChange={(e) => setCompoundMinEthInput(e.target.value)}
+                          placeholder="Min ETH"
+                          className="px-3 py-2 bg-zinc-800 border border-zinc-600 rounded text-white text-xs"
+                        />
+                        <input
+                          type="text"
+                          value={compoundCooldownInput}
+                          onChange={(e) => setCompoundCooldownInput(e.target.value)}
+                          placeholder="Cooldown sec"
+                          className="px-3 py-2 bg-zinc-800 border border-zinc-600 rounded text-white text-xs"
+                        />
+                        <input
+                          type="text"
+                          value={compoundMaxEthInput}
+                          onChange={(e) => setCompoundMaxEthInput(e.target.value)}
+                          placeholder="Max ETH"
+                          className="px-3 py-2 bg-zinc-800 border border-zinc-600 rounded text-white text-xs"
+                        />
+                        <input
+                          type="text"
+                          value={compoundMaxSentiInput}
+                          onChange={(e) => setCompoundMaxSentiInput(e.target.value)}
+                          placeholder="Max SENTI"
+                          className="px-3 py-2 bg-zinc-800 border border-zinc-600 rounded text-white text-xs"
+                        />
+                        <input
+                          type="text"
+                          value={compoundMaxDeadlineWindowInput}
+                          onChange={(e) => setCompoundMaxDeadlineWindowInput(e.target.value)}
+                          placeholder="Max deadline sec"
+                          className="px-3 py-2 bg-zinc-800 border border-zinc-600 rounded text-white text-xs"
+                        />
+                      </div>
+                      <button
+                        onClick={() =>
+                          handleTokenAction(
+                            "setCompoundConfig",
+                            {
+                              minEthToCompound: compoundMinEthInput.trim(),
+                              compoundCooldown: compoundCooldownInput.trim(),
+                              maxEthPerCompound: compoundMaxEthInput.trim(),
+                              maxSentiPerCompound: compoundMaxSentiInput.trim(),
+                              maxDeadlineWindow: compoundMaxDeadlineWindowInput.trim(),
+                            },
+                            "Update liquidity compounding guardrails?",
+                          )
+                        }
+                        disabled={
+                          tokenAdminDisabled
+                          || !compoundMinEthInput.trim()
+                          || !compoundCooldownInput.trim()
+                          || !compoundMaxEthInput.trim()
+                          || !compoundMaxSentiInput.trim()
+                          || !compoundMaxDeadlineWindowInput.trim()
+                        }
+                        className="px-3 py-2 text-xs rounded bg-blue-600 hover:bg-blue-500 disabled:opacity-40"
+                      >
+                        {tokenBusy === "setCompoundConfig" ? "Working…" : "Update Guardrails"}
+                      </button>
+                    </div>
+
+                    <div className="space-y-3 border border-zinc-800 rounded-lg p-3 bg-zinc-950/40">
+                      <div>
+                        <div className="text-sm font-medium">Compound Liquidity</div>
+                        <div className="text-xs text-zinc-500">
+                          Enter the ETH target and the page will auto-fill the raw liquidity delta plus token caps. Amount caps are decimal token amounts. Leave deadline blank to use now + 300 seconds.
+                        </div>
+                      </div>
+                      <div className="space-y-2 rounded border border-zinc-800 bg-zinc-900/50 p-3">
+                        <div className="text-[11px] text-zinc-400">
+                          Pool order: amount0 = {tokenContract?.sentiIsCurrency0 ? "SENTI" : "ETH"}, amount1 = {tokenContract?.sentiIsCurrency0 ? "ETH" : "SENTI"}.
+                        </div>
+                        <input
+                          type="text"
+                          value={compoundEthTargetInput}
+                          onChange={(e) => setCompoundEthTargetInput(e.target.value)}
+                          placeholder="Target ETH to add"
+                          className="w-full px-3 py-2 bg-zinc-800 border border-zinc-600 rounded text-white text-xs"
+                        />
+                        {compoundEstimateBusy && (
+                          <div className="text-[11px] text-zinc-500">
+                            Estimating compound inputs from recent compounding or live LP state…
+                          </div>
+                        )}
+                        {compoundEstimateError && (
+                          <div className="text-[11px] text-red-400">{compoundEstimateError}</div>
+                        )}
+                        {compoundEstimate && (
+                          <div className="space-y-1 text-[11px] text-zinc-400">
+                            {compoundEstimate.basis.source === "compound_history" && compoundEstimate.basis.txHash ? (
+                              <div>
+                                Auto-filled from <TxLink hash={compoundEstimate.basis.txHash} explorer={token?.explorerUrl || EXPLORER} /> using the latest successful compound caps of {compoundEstimate.basis.ethAmountMax} ETH and {compoundEstimate.basis.sentiAmountMax} SENTI.
+                              </div>
+                            ) : (
+                              <div>
+                                Auto-filled from live tracked LP position {compoundEstimate.basis.trackedPositionTokenId ? `#${compoundEstimate.basis.trackedPositionTokenId}` : "state"}
+                                {compoundEstimate.basis.currentTick !== null ? ` at tick ${compoundEstimate.basis.currentTick}` : ""}
+                                {` using the current LP balances of ${compoundEstimate.basis.ethAmountMax} ETH and ${compoundEstimate.basis.sentiAmountMax} SENTI as the first compound anchor.`}
+                              </div>
+                            )}
+                            <div>
+                              Estimated SENTI cap: {compoundEstimate.estimatedSenti} SENTI. {compoundEstimate.validated
+                                ? "Live simulation passed for the current manager state."
+                                : compoundEstimate.cooldownActive
+                                  ? `Cooldown is active until ${formatTime(compoundEstimate.nextCompoundAt)}, so the fill is based on the latest live ratio and will revalidate when you compound later.`
+                                  : compoundEstimate.basis.source === "compound_history"
+                                    ? "Using the latest successful compound ratio."
+                                    : "Using the current tracked LP ratio as the first compound anchor."}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                      <div className="grid md:grid-cols-4 gap-2">
+                        <input
+                          type="text"
+                          value={compoundLiquidityInput}
+                          onChange={(e) => setCompoundLiquidityInput(e.target.value)}
+                          placeholder="Liquidity increase"
+                          className="px-3 py-2 bg-zinc-800 border border-zinc-600 rounded text-white text-xs"
+                        />
+                        <input
+                          type="text"
+                          value={compoundAmount0MaxInput}
+                          onChange={(e) => setCompoundAmount0MaxInput(e.target.value)}
+                          placeholder={tokenContract?.sentiIsCurrency0 ? "Amount0 max (SENTI)" : "Amount0 max (ETH)"}
+                          className="px-3 py-2 bg-zinc-800 border border-zinc-600 rounded text-white text-xs"
+                        />
+                        <input
+                          type="text"
+                          value={compoundAmount1MaxInput}
+                          onChange={(e) => setCompoundAmount1MaxInput(e.target.value)}
+                          placeholder={tokenContract?.sentiIsCurrency0 ? "Amount1 max (ETH)" : "Amount1 max (SENTI)"}
+                          className="px-3 py-2 bg-zinc-800 border border-zinc-600 rounded text-white text-xs"
+                        />
+                        <input
+                          type="text"
+                          value={compoundDeadlineInput}
+                          onChange={(e) => setCompoundDeadlineInput(e.target.value)}
+                          placeholder="Deadline unix ts (optional)"
+                          className="px-3 py-2 bg-zinc-800 border border-zinc-600 rounded text-white text-xs"
+                        />
+                      </div>
+                      <button
+                        onClick={() =>
+                          handleTokenAction(
+                            "compoundLiquidity",
+                            {
+                              liquidityIncrease: compoundLiquidityInput.trim(),
+                              amount0Max: compoundAmount0MaxInput.trim(),
+                              amount1Max: compoundAmount1MaxInput.trim(),
+                              ...(compoundDeadlineInput.trim() ? { deadline: compoundDeadlineInput.trim() } : {}),
+                            },
+                            "Run a manager compound transaction now?",
+                          )
+                        }
+                        disabled={
+                          tokenCompoundDisabled
+                          || !compoundLiquidityInput.trim()
+                          || !compoundAmount0MaxInput.trim()
+                          || !compoundAmount1MaxInput.trim()
+                        }
+                        className="px-3 py-2 text-xs rounded bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40"
+                      >
+                        {tokenBusy === "compoundLiquidity"
+                          ? "Working…"
+                          : tokenCompoundCooldownActive
+                            ? `Compound Locked Until ${formatTime(tokenNextCompoundAt)}`
+                            : "Compound Now"}
+                      </button>
+                      {tokenCompoundCooldownActive && (
+                        <div className="text-[11px] text-amber-400">
+                          Manager cooldown is still active until {formatTime(tokenNextCompoundAt)}. The form stays filled, but the transaction is blocked until then.
+                        </div>
+                      )}
+                    </div>
+                  </>
+                ) : (
+                  <p className="text-xs text-zinc-500">
+                    SentiLiquidityManager is not configured yet. Deploy it and set NEXT_PUBLIC_SENTI_LIQUIDITY_MANAGER_ADDRESS.
+                  </p>
+                )}
+              </div>
+            )}
+
             {/* Supply Grid */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <StatCard label="Total Minted" value={sup.total} max={sup.max} color="text-white" />
@@ -697,7 +1686,7 @@ export default function AdminPage() {
 
             {/* Contract Info */}
             <div className="bg-zinc-900 border border-zinc-700 rounded-lg p-4 space-y-2">
-              <h2 className="text-sm font-bold text-zinc-400 uppercase">Contract</h2>
+              <h2 className="text-sm font-bold text-zinc-400 uppercase">NFT Contract</h2>
               <Row label="Address" value={c.address} mono />
               <Row label="Treasury" value={c.treasury} mono />
               <Row label="Owner Signer (server)" value={c.ownerSigner ?? "(not configured)"} mono />

@@ -2,32 +2,20 @@
 pragma solidity ^0.8.28;
 
 import "erc721a/contracts/ERC721A.sol";
-import "@openzeppelin/contracts/access/AccessControl.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Pausable.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 
 /// @title SentinelETH
-/// @notice ERC-721A collection of up to 10,000 Sentinels on Ethereum.
-///         - Up to 8,293 publicly mintable via `publicMint` at a fixed ETH price.
-///           Metadata URIs are filled in by the off-chain composer (URI_SETTER_ROLE)
-///           immediately after via `setTokenURIs`.
-///         - Up to 1,707 reserved for an airdrop, claimable via Merkle proof
-///           (`claim`). Each (claimer, airdropId) leaf is one-shot.
-///         - Public pool can be permanently frozen below cap with `closeMint`.
-///         - Airdrop pool can be permanently frozen below cap with `closeAirdrop`.
-///         - Token holders may `burn` their own tokens (does not free the slot).
-///         - All ETH from mints stays in the contract until `withdraw` is called
-///           (permissionless), which sweeps the full balance to the immutable-by-role
-///           `treasury` address. Treasury can only be changed by DEFAULT_ADMIN_ROLE.
-contract SentinelETH is ERC721A, AccessControl, Pausable, ReentrancyGuard {
-    // ─── Roles ─────────────────────────────────────────────────────────────
-    /// @dev DEFAULT_ADMIN_ROLE is inherited from AccessControl (== 0x00).
-    ///      Holds: setTreasury, setAirdropRoot, closeMint, closeAirdrop,
-    ///             emergencyAdminMint, grant/revoke roles.
-    bytes32 public constant PAUSER_ROLE     = keccak256("PAUSER_ROLE");
-    bytes32 public constant URI_SETTER_ROLE = keccak256("URI_SETTER_ROLE");
-
+/// @notice ERC-721A collection of 10,000 Sentinels on Ethereum.
+///         8,293 are publicly mintable directly by users (`publicMint`) at a
+///         fixed ETH price, with metadata URIs filled in by the off-chain
+///         composer immediately after via `setTokenURIs`. The remaining 1,707
+///         are reserved for an airdrop, claimable via Merkle proof (`claim`).
+///         The legacy `mintFor` relayer path is retained for back-compat /
+///         emergency relayer use; `publicMint` is the canonical user path.
+contract SentinelETH is ERC721A, Ownable, Pausable, ReentrancyGuard {
     // ─── Constants ─────────────────────────────────────────────────────────
     uint256 public constant MAX_SUPPLY        = 10_000;
     uint256 public constant PUBLIC_CAP        = 8_293;
@@ -36,13 +24,19 @@ contract SentinelETH is ERC721A, AccessControl, Pausable, ReentrancyGuard {
     uint256 public constant MAX_PER_WALLET    = 4;
     uint256 public constant MAX_URI_LENGTH    = 256;
     uint256 public constant MAX_BATCH_SIZE    = 4;
-    uint256 public constant MAX_CLAIM_BATCH_SIZE = 25;
 
     // ─── Mutable config ────────────────────────────────────────────────────
     address public treasury;
+    address public minter;
     bytes32 public airdropRoot;
-    bool    public publicClosed;   // once true, no further public mints allowed
-    bool    public airdropClosed;  // once true, no further airdrop claims allowed
+    bool    public publicClosed;  // once true, no further public mints allowed
+    bool    public airdropClosed; // once true, no further airdrop claims allowed
+
+    /// @notice Collection-level metadata URI (OpenSea / Reservoir / Magic Eden).
+    ///         Points to a JSON document with {name, description, image,
+    ///         banner_image_url, external_link, ...}. Owner-settable so the
+    ///         JSON can be uploaded to Irys post-deploy.
+    string public contractURI;
 
     // ─── Counters ──────────────────────────────────────────────────────────
     uint256 public publicMinted;
@@ -56,6 +50,7 @@ contract SentinelETH is ERC721A, AccessControl, Pausable, ReentrancyGuard {
     // ─── Events ────────────────────────────────────────────────────────────
     event PublicMint(address indexed to, uint256 indexed startTokenId, uint256 qty, uint256 paid);
     event AirdropClaim(address indexed to, uint256 indexed airdropId, uint256 indexed tokenId);
+    event MinterUpdated(address indexed minter);
     event TreasuryUpdated(address indexed treasury);
     event AirdropRootUpdated(bytes32 root);
     event PublicMintClosed(uint256 finalPublicMinted);
@@ -63,11 +58,14 @@ contract SentinelETH is ERC721A, AccessControl, Pausable, ReentrancyGuard {
     event Withdrawn(address indexed to, uint256 amount);
     event EmergencyAdminMint(address indexed to, uint256 indexed startTokenId, uint256 qty);
     event TokenURIsSet(uint256 indexed startTokenId, uint256 qty);
+    event ContractURIUpdated(string uri);
 
     // ─── Errors ────────────────────────────────────────────────────────────
+    error NotMinter();
     error PublicMintIsClosed();
     error AirdropIsClosed();
     error InvalidQty();
+    error UriCountMismatch();
     error UriTooLong();
     error UriEmpty();
     error UriAlreadySet();
@@ -84,26 +82,21 @@ contract SentinelETH is ERC721A, AccessControl, Pausable, ReentrancyGuard {
     error WithdrawFailed();
     error NoBalance();
 
-    /// @notice Constructor grants ALL roles to the deployer. After deploy, the
-    ///         deployer should `grantRole(URI_SETTER_ROLE, watcherWallet)` so the
-    ///         server-side composer can backfill metadata. The deployer keeps
-    ///         DEFAULT_ADMIN_ROLE and PAUSER_ROLE for ongoing admin operations.
-    constructor(address initialTreasury)
+    constructor(address initialTreasury, address initialMinter)
         ERC721A("SentinelETH", "SETH")
+        Ownable(msg.sender)
     {
         if (initialTreasury == address(0)) revert ZeroAddress();
+        if (initialMinter == address(0)) revert ZeroAddress();
         treasury = initialTreasury;
-
-        _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
-        _grantRole(PAUSER_ROLE,        msg.sender);
-        _grantRole(URI_SETTER_ROLE,    msg.sender);
-
+        minter   = initialMinter;
         emit TreasuryUpdated(initialTreasury);
+        emit MinterUpdated(initialMinter);
     }
 
     // ═══════════════════════════════════════════════════════════════════════
     //  PUBLIC MINT (user-callable)
-    // ═══════════════════════════════════════════════════════════════════════
+    // ═════════════════════════════════════════════════════════════════════════
 
     /// @notice Mint `qty` Sentinels to the caller. Caller must forward exactly
     ///         `MINT_PRICE * qty` wei. Token URIs are filled in by the off-chain
@@ -133,27 +126,64 @@ contract SentinelETH is ERC721A, AccessControl, Pausable, ReentrancyGuard {
     }
 
     /// @notice Backfill metadata URIs for a contiguous range of tokens. Called
-    ///         by the off-chain composer (URI_SETTER_ROLE) immediately after a
+    ///         by the off-chain composer (`minter`) immediately after a
     ///         `publicMint`. One-shot per token: cannot overwrite a previously
     ///         set URI. Length of `uris` determines how many tokens are filled
     ///         starting at `startTokenId`.
-    function setTokenURIs(uint256 startTokenId, string[] calldata uris)
-        external
-        onlyRole(URI_SETTER_ROLE)
-        nonReentrant
-    {
+    function setTokenURIs(uint256 startTokenId, string[] calldata uris) external {
+        if (msg.sender != minter) revert NotMinter();
         uint256 n = uris.length;
         if (n == 0 || n > MAX_BATCH_SIZE) revert InvalidQty();
         for (uint256 i = 0; i < n; ++i) {
             uint256 tokenId = startTokenId + i;
             if (!_exists(tokenId)) revert URIQueryForNonexistentToken();
             if (bytes(_tokenURIs[tokenId]).length != 0) revert UriAlreadySet();
-            string calldata u = uris[i];
-            if (bytes(u).length == 0) revert UriEmpty();
-            if (bytes(u).length > MAX_URI_LENGTH) revert UriTooLong();
-            _tokenURIs[tokenId] = u;
+            string calldata uri = uris[i];
+            if (bytes(uri).length == 0) revert UriEmpty();
+            if (bytes(uri).length > MAX_URI_LENGTH) revert UriTooLong();
+            _tokenURIs[tokenId] = uri;
         }
         emit TokenURIsSet(startTokenId, n);
+    }
+
+    // ═════════════════════════════════════════════════════════════════════════
+    //  PUBLIC MINT (relayer-only, legacy / sponsored path)
+    // ═══════════════════════════════════════════════════════════════════════
+
+    /// @notice Mint `qty` Sentinels to `to` with the given Irys metadata `uris`.
+    ///         Caller must be the authorized `minter` and must forward exactly
+    ///         `MINT_PRICE * qty` wei. The relayer is expected to collect ETH
+    ///         from the end user (off-chain) and forward it here.
+    function mintFor(address to, uint256 qty, string[] calldata uris)
+        external
+        payable
+        whenNotPaused
+        nonReentrant
+    {
+        if (msg.sender != minter) revert NotMinter();
+        if (publicClosed) revert PublicMintIsClosed();
+        if (to == address(0)) revert ZeroAddress();
+        if (qty == 0 || qty > MAX_BATCH_SIZE) revert InvalidQty();
+        if (uris.length != qty) revert UriCountMismatch();
+        if (msg.value != MINT_PRICE * qty) revert WrongPayment();
+        if (publicMintedBy[to] + qty > MAX_PER_WALLET) revert WalletCapExceeded();
+        if (publicMinted + qty > PUBLIC_CAP) revert PublicCapExceeded();
+        if (_totalMinted() + qty > MAX_SUPPLY) revert MaxSupplyExceeded();
+
+        uint256 startTokenId = _nextTokenId();
+        for (uint256 i = 0; i < qty; ++i) {
+            string calldata uri = uris[i];
+            if (bytes(uri).length == 0) revert UriEmpty();
+            if (bytes(uri).length > MAX_URI_LENGTH) revert UriTooLong();
+            _tokenURIs[startTokenId + i] = uri;
+        }
+
+        publicMintedBy[to] += qty;
+        publicMinted       += qty;
+
+        _safeMint(to, qty);
+
+        emit PublicMint(to, startTokenId, qty, msg.value);
     }
 
     // ═══════════════════════════════════════════════════════════════════════
@@ -162,8 +192,6 @@ contract SentinelETH is ERC721A, AccessControl, Pausable, ReentrancyGuard {
 
     /// @notice Claim airdropped Sentinels. Each `airdropIds[i]` must be unique
     ///         and proven via Merkle proof over leaf = keccak256(abi.encode(msg.sender, airdropId)).
-    ///         URIs are provided by the claimer (assembled client-side from the
-    ///         airdrop manifest published with the merkle root).
     function claim(
         uint256[] calldata airdropIds,
         string[] calldata uris,
@@ -176,7 +204,7 @@ contract SentinelETH is ERC721A, AccessControl, Pausable, ReentrancyGuard {
         if (airdropClosed) revert AirdropIsClosed();
         if (airdropRoot == bytes32(0)) revert AirdropRootNotSet();
         uint256 qty = airdropIds.length;
-        if (qty == 0 || qty > MAX_CLAIM_BATCH_SIZE) revert InvalidQty();
+        if (qty == 0) revert InvalidQty();
         if (uris.length != qty || proofs.length != qty) revert LengthMismatch();
         if (airdropMinted + qty > AIRDROP_CAP) revert AirdropCapExceeded();
         if (_totalMinted() + qty > MAX_SUPPLY) revert MaxSupplyExceeded();
@@ -185,17 +213,17 @@ contract SentinelETH is ERC721A, AccessControl, Pausable, ReentrancyGuard {
 
         for (uint256 i = 0; i < qty; ++i) {
             uint256 airdropId = airdropIds[i];
-            string calldata u = uris[i];
+            string calldata uri = uris[i];
 
             if (airdropClaimed[airdropId]) revert AirdropAlreadyClaimed();
-            if (bytes(u).length == 0) revert UriEmpty();
-            if (bytes(u).length > MAX_URI_LENGTH) revert UriTooLong();
+            if (bytes(uri).length == 0) revert UriEmpty();
+            if (bytes(uri).length > MAX_URI_LENGTH) revert UriTooLong();
 
             bytes32 leaf = keccak256(bytes.concat(keccak256(abi.encode(msg.sender, airdropId))));
             if (!MerkleProof.verify(proofs[i], airdropRoot, leaf)) revert InvalidProof();
 
             airdropClaimed[airdropId] = true;
-            _tokenURIs[startTokenId + i] = u;
+            _tokenURIs[startTokenId + i] = uri;
 
             emit AirdropClaim(msg.sender, airdropId, startTokenId + i);
         }
@@ -205,77 +233,81 @@ contract SentinelETH is ERC721A, AccessControl, Pausable, ReentrancyGuard {
     }
 
     // ═══════════════════════════════════════════════════════════════════════
-    //  BURN (token holder)
+    //  OWNER CONTROLS
     // ═══════════════════════════════════════════════════════════════════════
 
-    /// @notice Burn a token you own (or are approved for). Mint counters are
-    ///         NOT decremented — caps still apply, the freed id is not
-    ///         re-mintable. This is purely supply reduction by the holder.
-    function burn(uint256 tokenId) external {
-        // ERC721A._burn(tokenId, true) checks msg.sender is owner or approved.
-        _burn(tokenId, true);
+    function setMinter(address newMinter) external onlyOwner {
+        if (newMinter == address(0)) revert ZeroAddress();
+        minter = newMinter;
+        emit MinterUpdated(newMinter);
     }
 
-    // ═══════════════════════════════════════════════════════════════════════
-    //  ADMIN CONTROLS
-    // ═══════════════════════════════════════════════════════════════════════
-
-    function setTreasury(address newTreasury) external onlyRole(DEFAULT_ADMIN_ROLE) {
+    function setTreasury(address newTreasury) external onlyOwner {
         if (newTreasury == address(0)) revert ZeroAddress();
         treasury = newTreasury;
         emit TreasuryUpdated(newTreasury);
     }
 
-    function setAirdropRoot(bytes32 root) external onlyRole(DEFAULT_ADMIN_ROLE) {
+    function setAirdropRoot(bytes32 root) external onlyOwner {
         airdropRoot = root;
         emit AirdropRootUpdated(root);
     }
 
-    function pause() external onlyRole(PAUSER_ROLE) {
+    /// @notice Set the collection-level metadata URI used by marketplaces.
+    ///         Upload the collection JSON to Irys, then pass the resulting
+    ///         gateway URL here. Can be updated to swap banner/logo later.
+    function setContractURI(string calldata uri) external onlyOwner {
+        if (bytes(uri).length == 0) revert UriEmpty();
+        if (bytes(uri).length > MAX_URI_LENGTH) revert UriTooLong();
+        contractURI = uri;
+        emit ContractURIUpdated(uri);
+    }
+
+    function pause() external onlyOwner {
         _pause();
     }
 
-    function unpause() external onlyRole(PAUSER_ROLE) {
+    function unpause() external onlyOwner {
         _unpause();
     }
 
-    /// @notice Permanently freeze the public pool at the current `publicMinted`.
+    /// @notice Permanently end public minting. Existing tokens are unaffected.
     ///         Any unminted portion of PUBLIC_CAP becomes un-mintable forever.
-    ///         Existing tokens and the airdrop pool are unaffected.
-    function closeMint() external onlyRole(DEFAULT_ADMIN_ROLE) {
+    ///         Airdrop claims continue to work after this is called.
+    function closeMint() external onlyOwner {
         publicClosed = true;
         emit PublicMintClosed(publicMinted);
     }
 
-    /// @notice Permanently freeze the airdrop pool at the current `airdropMinted`.
-    ///         Use this if migrators stop claiming and you want to lock in the
-    ///         final supply. Existing tokens and the public pool are unaffected.
-    function closeAirdrop() external onlyRole(DEFAULT_ADMIN_ROLE) {
+    /// @notice Permanently end the airdrop. Any unclaimed slots in AIRDROP_CAP
+    ///         become un-mintable forever, effectively reducing total supply.
+    ///         Existing claimed tokens are unaffected.
+    function closeAirdrop() external onlyOwner {
         airdropClosed = true;
         emit AirdropClosed(airdropMinted);
     }
 
-    /// @notice Admin-only emergency mint. Mints from the public pool (counts
-    ///         against PUBLIC_CAP and per-wallet cap). Bypasses payment.
-    ///         Used only if there is a serious failure in the user mint flow.
+    /// @notice Owner-only emergency mint, used only if the relayer is unrecoverable.
+    ///         Mints from the same supply pools as `mintFor` (counts against PUBLIC_CAP
+    ///         and per-wallet cap). Bypasses payment.
     function emergencyAdminMint(address to, uint256 qty, string[] calldata uris)
         external
-        onlyRole(DEFAULT_ADMIN_ROLE)
+        onlyOwner
         nonReentrant
     {
         if (to == address(0)) revert ZeroAddress();
         if (qty == 0 || qty > MAX_BATCH_SIZE) revert InvalidQty();
-        if (uris.length != qty) revert LengthMismatch();
+        if (uris.length != qty) revert UriCountMismatch();
         if (publicMintedBy[to] + qty > MAX_PER_WALLET) revert WalletCapExceeded();
         if (publicMinted + qty > PUBLIC_CAP) revert PublicCapExceeded();
         if (_totalMinted() + qty > MAX_SUPPLY) revert MaxSupplyExceeded();
 
         uint256 startTokenId = _nextTokenId();
         for (uint256 i = 0; i < qty; ++i) {
-            string calldata u = uris[i];
-            if (bytes(u).length == 0) revert UriEmpty();
-            if (bytes(u).length > MAX_URI_LENGTH) revert UriTooLong();
-            _tokenURIs[startTokenId + i] = u;
+            string calldata uri = uris[i];
+            if (bytes(uri).length == 0) revert UriEmpty();
+            if (bytes(uri).length > MAX_URI_LENGTH) revert UriTooLong();
+            _tokenURIs[startTokenId + i] = uri;
         }
 
         publicMintedBy[to] += qty;
@@ -286,13 +318,7 @@ contract SentinelETH is ERC721A, AccessControl, Pausable, ReentrancyGuard {
         emit EmergencyAdminMint(to, startTokenId, qty);
     }
 
-    // ═══════════════════════════════════════════════════════════════════════
-    //  WITHDRAW (permissionless, forced destination)
-    // ═══════════════════════════════════════════════════════════════════════
-
-    /// @notice Sweep entire contract ETH balance to `treasury`.
-    ///         Permissionless: anyone can call. Funds always go to `treasury`.
-    ///         The only way to redirect is `setTreasury`, which is admin-only.
+    /// @notice Sweep contract ETH balance to `treasury`.
     function withdraw() external nonReentrant {
         uint256 bal = address(this).balance;
         if (bal == 0) revert NoBalance();
@@ -350,20 +376,5 @@ contract SentinelETH is ERC721A, AccessControl, Pausable, ReentrancyGuard {
         uint256 walletRoom = MAX_PER_WALLET - used;
         uint256 globalRoom = PUBLIC_CAP - publicMinted;
         return walletRoom < globalRoom ? walletRoom : globalRoom;
-    }
-
-    // ═══════════════════════════════════════════════════════════════════════
-    //  ERC165
-    // ═══════════════════════════════════════════════════════════════════════
-
-    function supportsInterface(bytes4 interfaceId)
-        public
-        view
-        virtual
-        override(ERC721A, AccessControl)
-        returns (bool)
-    {
-        return ERC721A.supportsInterface(interfaceId)
-            || AccessControl.supportsInterface(interfaceId);
     }
 }

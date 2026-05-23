@@ -24,6 +24,12 @@ importers:
       '@openzeppelin/merkle-tree':
         specifier: ^1.0.8
         version: 1.0.8
+      '@uniswap/v4-core':
+        specifier: ^1.0.2
+        version: 1.0.2
+      '@uniswap/v4-periphery':
+        specifier: ^1.0.3
+        version: 1.0.3
       dotenv:
         specifier: ^17.4.0
         version: 17.4.0
@@ -521,6 +527,12 @@ packages:
 
   '@types/secp256k1@4.0.7':
     resolution: {integrity: sha512-Rcvjl6vARGAKRO6jHeKMatGrvOMGrR/AR11N1x2LqintPCyDZ7NBhrh238Z2VZc7aM7KIwnFpFQ7fnfK4H/9Qw==}
+
+  '@uniswap/v4-core@1.0.2':
+    resolution: {integrity: sha512-X15Tm2wWd+USAzEExMbo+g9naA6QN6mPgWm0MzDwRNlOfaNlepfUpSyt9RSrUfEODspwbyWbcLg6t5nwc/e7lg==}
+
+  '@uniswap/v4-periphery@1.0.3':
+    resolution: {integrity: sha512-JxLL0Djv9XcMvI2PatEnWrCrxuEaYNVhHxstndBOP+aJfh1XLg5ec8SDZ0xyoVfg2ElJTvuKpBgnu90bNValsg==}
 
   abbrev@1.0.9:
     resolution: {integrity: sha512-LEyx4aLEC3x6T0UguF6YILf+ntvmOaWsVfENmIW0E9H09vKlLDGelMjjSm0jkDHALj8A8quZ/HapKNigzwge+Q==}
@@ -2916,6 +2928,10 @@ snapshots:
   '@types/secp256k1@4.0.7':
     dependencies:
       '@types/node': 25.5.1
+
+  '@uniswap/v4-core@1.0.2': {}
+
+  '@uniswap/v4-periphery@1.0.3': {}
 
   abbrev@1.0.9: {}
 

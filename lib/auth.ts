@@ -1,13 +1,21 @@
+import argon2 from "argon2"
 import { SignJWT, jwtVerify } from "jose"
-import { createHash, timingSafeEqual } from "crypto"
+import { createHash, createHmac, randomBytes, timingSafeEqual } from "crypto"
 import { cookies } from "next/headers"
 import { getOptionalServerEnv } from "@/lib/env"
 import { checkRateLimit, getClientIp, rateLimitResponse } from "@/lib/rate-limit"
 
 export const ADMIN_COOKIE = "admin_session"
+export const ADMIN_PENDING_2FA_COOKIE = "admin_pending_2fa"
 const JWT_ALG = "HS256"
 const JWT_ISS = "sentineleth-admin"
+const JWT_PENDING_2FA_ISS = "sentineleth-admin-pending-2fa"
 const JWT_TTL = "8h"
+const JWT_PENDING_2FA_TTL = "5m"
+const TOTP_PERIOD_SECONDS = 30
+const TOTP_WINDOW = 1
+const TOTP_DIGITS = 6
+const TOTP_BASE32_ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567"
 
 function getSecret(): Uint8Array {
   const env = getOptionalServerEnv()
@@ -32,17 +40,25 @@ export function constantTimeEqual(a: string, b: string): boolean {
 }
 
 /**
- * Constant-time compare of the submitted password against the configured
- * ADMIN_PASSWORD env var. Both sides are sha256-hashed first so the
- * comparison length is fixed and timingSafeEqual works regardless of input
- * length, and so the configured password length isn't leaked via timing.
+ * Verify the submitted password against either ADMIN_PASSWORD_HASH (preferred)
+ * or the legacy plaintext ADMIN_PASSWORD fallback.
  */
-export function verifyAdminPassword(
+export async function verifyAdminPassword(
   submitted: string,
-  configured: string,
-): boolean {
-  if (typeof submitted !== "string" || typeof configured !== "string") return false
-  return constantTimeEqual(submitted, configured)
+  configured: { hash?: string; plaintext?: string },
+): Promise<boolean> {
+  if (typeof submitted !== "string") return false
+
+  if (configured.hash) {
+    try {
+      return await argon2.verify(configured.hash, submitted)
+    } catch {
+      return false
+    }
+  }
+
+  if (typeof configured.plaintext !== "string") return false
+  return constantTimeEqual(submitted, configured.plaintext)
 }
 
 /** Sign a short-lived admin session JWT. */
@@ -52,6 +68,16 @@ export async function signAdminJwt(subject: string): Promise<string> {
     .setIssuer(JWT_ISS)
     .setIssuedAt()
     .setExpirationTime(JWT_TTL)
+    .sign(getSecret())
+}
+
+/** Sign the short-lived cookie used between password and TOTP verification. */
+export async function signPendingAdminTotpJwt(subject: string): Promise<string> {
+  return new SignJWT({ sub: subject, step: "totp" })
+    .setProtectedHeader({ alg: JWT_ALG })
+    .setIssuer(JWT_PENDING_2FA_ISS)
+    .setIssuedAt()
+    .setExpirationTime(JWT_PENDING_2FA_TTL)
     .sign(getSecret())
 }
 
@@ -69,6 +95,141 @@ export async function verifyAdminJwt(token: string): Promise<string | null> {
   } catch {
     return null
   }
+}
+
+/** Verify the short-lived password-approved TOTP challenge cookie. */
+export async function verifyPendingAdminTotpJwt(token: string): Promise<string | null> {
+  try {
+    const { payload } = await jwtVerify(token, getSecret(), {
+      issuer: JWT_PENDING_2FA_ISS,
+      algorithms: [JWT_ALG],
+    })
+    if (payload.step !== "totp") return null
+    return typeof payload.sub === "string" ? payload.sub : null
+  } catch {
+    return null
+  }
+}
+
+function normalizeTotpSecret(secret: string): string {
+  return secret.toUpperCase().replace(/[\s-]/g, "").replace(/=+$/g, "")
+}
+
+function decodeBase32(secret: string): Buffer {
+  const normalized = normalizeTotpSecret(secret)
+  if (!normalized) {
+    throw new Error("TOTP secret is empty")
+  }
+
+  let value = 0
+  let bits = 0
+  const bytes: number[] = []
+
+  for (const char of normalized) {
+    const index = TOTP_BASE32_ALPHABET.indexOf(char)
+    if (index === -1) {
+      throw new Error(`Invalid base32 TOTP character: ${char}`)
+    }
+
+    value = (value << 5) | index
+    bits += 5
+
+    if (bits >= 8) {
+      bytes.push((value >>> (bits - 8)) & 0xff)
+      bits -= 8
+    }
+  }
+
+  return Buffer.from(bytes)
+}
+
+function encodeBase32(bytes: Uint8Array): string {
+  let value = 0
+  let bits = 0
+  let encoded = ""
+
+  for (const byte of bytes) {
+    value = (value << 8) | byte
+    bits += 8
+
+    while (bits >= 5) {
+      encoded += TOTP_BASE32_ALPHABET[(value >>> (bits - 5)) & 0x1f]
+      bits -= 5
+    }
+  }
+
+  if (bits > 0) {
+    encoded += TOTP_BASE32_ALPHABET[(value << (5 - bits)) & 0x1f]
+  }
+
+  return encoded
+}
+
+function hotp(secret: Buffer, counter: bigint): string {
+  const counterBytes = Buffer.alloc(8)
+  counterBytes.writeBigUInt64BE(counter)
+
+  const digest = createHmac("sha1", secret).update(counterBytes).digest()
+  const offset = digest[digest.length - 1] & 0x0f
+  const code = (
+    ((digest[offset] & 0x7f) << 24) |
+    ((digest[offset + 1] & 0xff) << 16) |
+    ((digest[offset + 2] & 0xff) << 8) |
+    (digest[offset + 3] & 0xff)
+  ) % (10 ** TOTP_DIGITS)
+
+  return code.toString().padStart(TOTP_DIGITS, "0")
+}
+
+function normalizeTotpCode(code: string): string {
+  return code.replace(/\D/g, "").slice(0, TOTP_DIGITS)
+}
+
+/**
+ * Verify a 6-digit RFC 6238 TOTP code against the configured admin secret.
+ * Accepts +/- 1 time step to tolerate small device clock skew.
+ */
+export function verifyAdminTotp(code: string, secret: string, now = Date.now()): boolean {
+  const normalizedCode = normalizeTotpCode(code)
+  if (normalizedCode.length !== TOTP_DIGITS) return false
+
+  const secretBytes = decodeBase32(secret)
+  const currentStep = BigInt(Math.floor(now / 1000 / TOTP_PERIOD_SECONDS))
+
+  for (let offset = -TOTP_WINDOW; offset <= TOTP_WINDOW; offset += 1) {
+    const candidate = hotp(secretBytes, currentStep + BigInt(offset))
+    if (constantTimeEqual(normalizedCode, candidate)) {
+      return true
+    }
+  }
+
+  return false
+}
+
+export function generateAdminTotpSecret(byteLength = 20): string {
+  return encodeBase32(randomBytes(byteLength))
+}
+
+export function buildAdminTotpProvisioningUri({
+  secret,
+  issuer,
+  accountName,
+}: {
+  secret: string
+  issuer: string
+  accountName: string
+}): string {
+  const normalizedSecret = normalizeTotpSecret(secret)
+  const label = `${issuer}:${accountName}`
+  const params = new URLSearchParams({
+    secret: normalizedSecret,
+    issuer,
+    algorithm: "SHA1",
+    digits: String(TOTP_DIGITS),
+    period: String(TOTP_PERIOD_SECONDS),
+  })
+
+  return `otpauth://totp/${encodeURIComponent(label)}?${params.toString()}`
 }
 
 /**
