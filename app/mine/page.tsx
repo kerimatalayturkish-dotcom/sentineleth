@@ -1,5 +1,6 @@
 "use client"
 
+import Link from "next/link"
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { useAccount, useChainId, useWriteContract } from "wagmi"
 import { Activity, ArrowUpRight, ChevronDown, ChevronUp, Clock, Database, Radio, RefreshCw, ShieldAlert, ShieldCheck, Square, Zap } from "lucide-react"
@@ -248,33 +249,6 @@ export default function MinePage() {
     return sumRewardText(wins).toString()
   }, [aggregateClaim, wins])
   const displayCurrentBlock = streamTimeline?.currentBlock ?? stats?.patrolMiner.currentBlock ?? null
-  const sentiTradeUrls = useMemo(() => {
-    const sentiToken = miningPublicConfig.miningChain.contracts.sentiToken
-    if (!sentiToken) return null
-
-    const buildTradeUrl = (inputCurrency: string, outputCurrency: string) => {
-      const params = new URLSearchParams({
-        inputCurrency,
-        outputCurrency,
-      })
-      if (miningPublicConfig.miningChain.chainId === 11155111) {
-        params.set("chain", "sepolia")
-      }
-
-      return `https://app.uniswap.org/swap?${params.toString()}`
-    }
-
-    return {
-      buy: buildTradeUrl("NATIVE", sentiToken),
-      sell: buildTradeUrl(sentiToken, "NATIVE"),
-    }
-  }, [])
-  const sentiTokenListUrl = useMemo(() => {
-    if (miningPublicConfig.miningChain.chainId !== 11155111) return null
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL?.trim()
-    if (!appUrl) return null
-    return new URL("/api/uniswap/token-list", appUrl).toString()
-  }, [])
 
   const loadStats = useCallback(async () => {
     const data = await fetchJson<MiningStats>("/api/mining/stats", { cache: "no-store" })
@@ -637,27 +611,15 @@ export default function MinePage() {
               <StatusPill label={stats?.database.configured ? "db online" : "db offline"} tone={dbTone} />
             </div>
             <h1 className="font-pixel text-xl text-sentinel sm:text-2xl">SENTI Mining</h1>
-            {sentiTradeUrls ? (
-              <div className="flex flex-wrap items-center gap-2 pt-1">
-                <span className="text-xs uppercase tracking-[0.14em] text-muted-foreground">Official Uniswap</span>
-                <a
-                  href={sentiTradeUrls.buy}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex h-8 items-center justify-center gap-1 rounded-lg border border-sentinel/30 bg-sentinel/10 px-3 text-sm font-medium text-sentinel transition hover:bg-sentinel/20"
-                >
-                  Buy SENTI <ArrowUpRight className="size-4" />
-                </a>
-                <a
-                  href={sentiTradeUrls.sell}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex h-8 items-center justify-center gap-1 rounded-lg border border-border bg-background/70 px-3 text-sm font-medium text-foreground transition hover:bg-muted"
-                >
-                  Sell SENTI <ArrowUpRight className="size-4" />
-                </a>
-              </div>
-            ) : null}
+            <div className="flex flex-wrap items-center gap-2 pt-1">
+              <span className="text-xs uppercase tracking-[0.14em] text-muted-foreground">SENTI Trade</span>
+              <Link
+                href="/trade"
+                className="inline-flex h-8 items-center justify-center gap-1 rounded-lg border border-sentinel/30 bg-sentinel/10 px-3 text-sm font-medium text-sentinel transition hover:bg-sentinel/20"
+              >
+                Open Trade Page <ArrowUpRight className="size-4" />
+              </Link>
+            </div>
           </div>
         </section>
 
@@ -720,49 +682,16 @@ export default function MinePage() {
               <div className="sm:col-span-2 rounded-lg border border-sentinel/15 bg-background/60 p-3">
                 <div className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Trade</div>
                 <div className="mt-2 text-sm text-foreground">
-                  Open the official Uniswap app with either the buy path or the sell path prefilled on {stats?.chain.miningChainName ?? "Sepolia"}.
+                  Open the internal SENTI trade page and buy or sell directly on {stats?.chain.miningChainName ?? "Sepolia"}.
                 </div>
-                {sentiTradeUrls ? (
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    <a
-                      href={sentiTradeUrls.buy}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="inline-flex h-8 items-center justify-center gap-1 rounded-lg border border-sentinel/30 bg-sentinel/10 px-3 text-sm font-medium text-sentinel transition hover:bg-sentinel/20"
-                    >
-                      Buy SENTI <ArrowUpRight className="size-4" />
-                    </a>
-                    <a
-                      href={sentiTradeUrls.sell}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="inline-flex h-8 items-center justify-center gap-1 rounded-lg border border-border bg-background/70 px-3 text-sm font-medium text-foreground transition hover:bg-muted"
-                    >
-                      Sell SENTI <ArrowUpRight className="size-4" />
-                    </a>
-                  </div>
-                ) : (
-                  <div className="mt-3 text-xs text-muted-foreground">Set NEXT_PUBLIC_SENTI_TOKEN_ADDRESS to enable the Uniswap shortcut.</div>
-                )}
-                {sentiTokenListUrl ? (
-                  <div className="mt-3 rounded-lg border border-sentinel/15 bg-card/70 p-3">
-                    <div className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Sepolia Token List</div>
-                    <div className="mt-2 text-xs text-muted-foreground">
-                      If the official Uniswap app says &quot;No results found&quot; for SENTI on Sepolia, import this token list URL in Uniswap first.
-                    </div>
-                    <a
-                      href={sentiTokenListUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="mt-3 inline-flex h-8 items-center justify-center gap-1 rounded-lg border border-sentinel/30 bg-sentinel/10 px-3 text-sm font-medium text-sentinel transition hover:bg-sentinel/20"
-                    >
-                      Open Token List JSON <ArrowUpRight className="size-4" />
-                    </a>
-                    <div className="mt-2 break-all rounded-md border border-sentinel/10 bg-background/60 px-2 py-2 font-mono text-[11px] text-muted-foreground">
-                      {sentiTokenListUrl}
-                    </div>
-                  </div>
-                ) : null}
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <Link
+                    href="/trade"
+                    className="inline-flex h-8 items-center justify-center gap-1 rounded-lg border border-sentinel/30 bg-sentinel/10 px-3 text-sm font-medium text-sentinel transition hover:bg-sentinel/20"
+                  >
+                    Open Trade Page <ArrowUpRight className="size-4" />
+                  </Link>
+                </div>
               </div>
             </CardContent>
           </Card>

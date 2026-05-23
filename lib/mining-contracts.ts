@@ -92,6 +92,15 @@ export const V4_QUOTER_ABI = parseAbi([
   'function quoteExactInputSingle(((address currency0, address currency1, uint24 fee, int24 tickSpacing, address hooks) poolKey, bool zeroForOne, uint128 exactAmount, bytes hookData) params) returns (uint256 amountOut, uint256 gasEstimate)',
 ])
 
+export const UNIVERSAL_ROUTER_ABI = parseAbi([
+  'function execute(bytes commands, bytes[] inputs, uint256 deadline) payable',
+])
+
+export const PERMIT2_ALLOWANCE_TRANSFER_ABI = parseAbi([
+  'function allowance(address user, address token, address spender) view returns (uint160 amount, uint48 expiration, uint48 nonce)',
+  'function approve(address token, address spender, uint160 amount, uint48 expiration)',
+])
+
 export const POOL_SWAP_TEST_ABI = parseAbi([
   'function swap((address currency0, address currency1, uint24 fee, int24 tickSpacing, address hooks) key, (bool zeroForOne, int256 amountSpecified, uint160 sqrtPriceLimitX96) params, (bool takeClaims, bool settleUsingBurn) testSettings, bytes hookData) payable returns (int256 delta)',
 ])
